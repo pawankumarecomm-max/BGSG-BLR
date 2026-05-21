@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bangalore Plant - Order, Stock & P&L Control</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.23.5/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#eef4fb;--card:#fff;--text:#111827;--muted:#64748b;--light:#94a3b8;--border:#e2e8f0;
+  --green:#059669;--green2:#dcfce7;--blue:#1d4ed8;--blue2:#dbeafe;--amber:#b45309;--amber2:#fef3c7;--red:#dc2626;--red2:#fee2e2;--purple:#7c3aed;--purple2:#ede9fe;--slate:#0f172a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body,#root{min-height:100%}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
+button,input,select,textarea{font-family:'DM Sans',sans-serif}
+button{cursor:pointer}
+input:focus,select:focus,textarea:focus{outline:2px solid rgba(5,150,105,.22);border-color:var(--green)!important}
+::-webkit-scrollbar{width:7px;height:7px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:99px}
+.app{display:flex;min-height:100vh}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:250px;background:#0f172a;color:#cbd5e1;z-index:20;display:flex;flex-direction:column;border-right:1px solid rgba(255,255,255,.08)}
+.brand{padding:20px 18px;border-bottom:1px solid rgba(255,255,255,.08)}
+.brand .logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#059669,#1d4ed8);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:10px}
+.brand h1{font-family:'Sora',sans-serif;color:#fff;font-size:16px;line-height:1.25}.brand p{font-size:11px;color:#94a3b8;margin-top:4px}
+.nav{padding:12px 10px;overflow:auto;flex:1}.nav button{width:100%;border:0;background:transparent;color:#cbd5e1;padding:10px 12px;border-radius:10px;text-align:left;display:flex;gap:10px;align-items:center;font-size:13px;font-weight:600;margin-bottom:4px}.nav button:hover{background:#1e293b}.nav button.active{background:#047857;color:#fff}.nav .ico{width:22px;text-align:center}
+.sidebar-footer{padding:12px 16px;border-top:1px solid rgba(255,255,255,.08);font-size:11px;color:#94a3b8;line-height:1.4}
+.main{margin-left:250px;width:calc(100% - 250px);padding:24px 28px 48px}
+.page-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:18px}.page-head h2{font-family:'Sora',sans-serif;font-size:23px;letter-spacing:-.5px}.page-head p{color:var(--muted);font-size:13px;margin-top:4px}.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{border:0;border-radius:10px;padding:9px 14px;font-weight:700;font-size:13px;display:inline-flex;gap:7px;align-items:center;justify-content:center;white-space:nowrap}.btn.primary{background:var(--green);color:#fff}.btn.secondary{background:#fff;border:1px solid var(--border);color:#334155}.btn.danger{background:var(--red);color:#fff}.btn.amber{background:var(--amber);color:#fff}.btn.blue{background:var(--blue);color:#fff}.btn.outline{background:#fff;border:1px solid var(--green);color:var(--green)}.btn.ghost{background:transparent;color:#475569}.btn:disabled{opacity:.5;cursor:not-allowed}
+.grid{display:grid;gap:14px}.kpi-grid{grid-template-columns:repeat(6,minmax(150px,1fr));margin-bottom:16px}.kpi{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:0 1px 2px rgba(15,23,42,.04)}.kpi .top{display:flex;justify-content:space-between;gap:10px}.kpi label{font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.4px}.kpi strong{display:block;font-family:'Sora',sans-serif;font-size:24px;margin-top:8px;letter-spacing:-.5px}.kpi small{display:block;color:var(--muted);margin-top:4px;font-size:12px}.kpi.green{background:#f0fdf4;border-color:#bbf7d0}.kpi.blue{background:#eff6ff;border-color:#bfdbfe}.kpi.amber{background:#fffbeb;border-color:#fde68a}.kpi.red{background:#fff1f2;border-color:#fecdd3}.kpi.purple{background:#faf5ff;border-color:#e9d5ff}.kpi .icon{font-size:25px;opacity:.75}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:0 1px 2px rgba(15,23,42,.04)}.card-head{padding:15px 17px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:10px}.card-title{font-family:'Sora',sans-serif;font-size:14px;font-weight:800}.card-body{padding:16px}.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}.toolbar .search{position:relative}.toolbar .search span{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--light)}
+.inp,.sel,.txt{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:9px 12px;font-size:13px;background:#fff;color:var(--text)}.toolbar .inp{padding-left:34px;width:270px}.sel.wide{width:230px}.muted{color:var(--muted)}.tiny{font-size:11px;color:var(--light)}
+.table-wrap{overflow:auto;border:1px solid var(--border);border-radius:14px;background:#fff}.table{width:100%;border-collapse:separate;border-spacing:0;min-width:1050px}.table th{position:sticky;top:0;background:#f8fafc;color:#475569;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.45px;font-weight:800;padding:11px 13px;border-bottom:1px solid var(--border);z-index:1}.table td{padding:12px 13px;border-bottom:1px solid #eef2f7;font-size:13px;vertical-align:middle}.table tr:hover td{background:#fbfdff}.table tr:last-child td{border-bottom:0}.num{font-weight:800;font-family:'Sora',sans-serif}.green-t{color:var(--green)}.blue-t{color:var(--blue)}.amber-t{color:var(--amber)}.red-t{color:var(--red)}.right{text-align:right}.center{text-align:center}.nowrap{white-space:nowrap}.ellipsis{max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badge{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:4px 9px;font-size:11px;font-weight:800;white-space:nowrap}.badge.green{background:var(--green2);color:#166534}.badge.blue{background:var(--blue2);color:#1e40af}.badge.amber{background:var(--amber2);color:#92400e}.badge.red{background:var(--red2);color:#991b1b}.badge.gray{background:#f1f5f9;color:#475569}.badge.purple{background:var(--purple2);color:#5b21b6}
+.progress{height:8px;background:#e2e8f0;border-radius:99px;overflow:hidden;margin-top:5px}.progress span{display:block;height:100%;border-radius:99px;background:var(--green);min-width:2px}.progress.red span{background:var(--red)}.progress.amber span{background:#f59e0b}.progress.blue span{background:var(--blue)}
+.split{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}.three{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.two{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px}.field label{display:block;font-size:12px;color:#475569;font-weight:700;margin-bottom:6px}.field.full{grid-column:1/-1}.calc-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;background:#f8fafc;border:1px solid var(--border);border-radius:13px;padding:13px;margin-top:13px}.calc-item{text-align:center}.calc-item label{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.3px}.calc-item strong{font-family:'Sora',sans-serif;font-size:15px;margin-top:3px;display:block}.modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.62);z-index:100;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:32px 16px}.modal{background:#fff;border-radius:18px;width:720px;max-width:96vw;box-shadow:0 30px 80px rgba(15,23,42,.35)}.modal.wide{width:980px}.modal-head{padding:17px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#fff;border-radius:18px 18px 0 0;z-index:2}.modal-head h3{font-family:'Sora',sans-serif;font-size:16px}.x{border:0;background:#f1f5f9;border-radius:9px;width:32px;height:32px}.modal-body{padding:20px 22px}.detail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.detail{background:#f8fafc;border:1px solid var(--border);border-radius:13px;padding:12px}.detail label{font-size:10px;color:var(--muted);font-weight:800;text-transform:uppercase}.detail strong{display:block;margin-top:6px;font-size:14px}.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}.day{min-height:116px;background:#fff;border:1px solid var(--border);border-radius:13px;padding:8px}.day .dnum{font-weight:800;color:#334155;font-size:12px;margin-bottom:6px}.chip{display:block;border-radius:9px;padding:7px 8px;font-size:11px;font-weight:800;margin-bottom:6px;line-height:1.25;overflow:hidden;text-overflow:ellipsis;border:1px solid transparent}.chip small{display:block;font-weight:700;opacity:.82;margin-top:3px}.chip.vendor,.chip.receive{background:#eff6ff;color:#1e40af;border-color:#bfdbfe}.chip.client,.chip.dispatch{background:#f0fdf4;color:#166534;border-color:#bbf7d0}.plan-board{overflow-x:auto;padding-bottom:6px}.plan-grid{display:grid;gap:10px}.plan-day{min-height:155px;min-width:185px}.legend{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--muted);font-weight:700}.legend-dot{width:12px;height:12px;border-radius:50%;display:inline-block}.legend-dot.green{background:var(--green)}.legend-dot.blue{background:var(--blue)}.tabs{display:flex;background:#f1f5f9;padding:4px;border-radius:11px;gap:4px}.tabs button{border:0;background:transparent;border-radius:8px;padding:7px 12px;font-weight:800;color:#475569}.tabs button.active{background:#fff;color:var(--green);box-shadow:0 1px 2px rgba(15,23,42,.1)}
+@media(max-width:1200px){.kpi-grid{grid-template-columns:repeat(3,1fr)}.split,.three{grid-template-columns:1fr}.main{padding:18px}.sidebar{width:220px}.main{margin-left:220px;width:calc(100% - 220px)}}
+@media(max-width:800px){.sidebar{position:relative;width:100%;height:auto}.app{display:block}.main{margin-left:0;width:100%}.kpi-grid,.two,.form-grid,.detail-grid{grid-template-columns:1fr}.page-head{display:block}.actions{margin-top:12px}.calendar-grid{grid-template-columns:1fr}.day{min-height:auto}}
+@media print{.sidebar,.actions,.toolbar,.btn,.no-print{display:none!important}.main{margin-left:0!important;width:100%!important;padding:12px!important}.card,.kpi{box-shadow:none}.table th{position:static}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+const {useState,useMemo,useEffect} = React;
+
+// ─── SUPABASE CLOUD CONNECTION ───────────────────────────────────
+// Public browser key only. Do not paste a service_role key here.
+const SUPABASE_URL='https://yjxbeteukpgxurnketgc.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlqeGJldGV1a3BneHVybmtldGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNjY4MjQsImV4cCI6MjA5NDk0MjgyNH0.vk0YPRWuRXaBQiWJJEn0P9_D1Jxt_Ll8dQdASyfAijI';
+const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+const CLOUD_TABLES={clients:'clients',vendors:'vendors',skus:'skus',orders:'vendor_orders',receipts:'fg_receipts',dispatches:'dispatches',rmOrders:'mill_rm_orders'};
+
+const C={green:'#059669',blue:'#1d4ed8',amber:'#b45309',red:'#dc2626',purple:'#7c3aed'};
+const fN=(n,d=0)=>Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fC=(n)=>`₹${fN(n,0)}`;
+const fP=(n)=>`${Number(n||0).toFixed(1)}%`;
+const todayISO=()=>new Date().toISOString().slice(0,10);
+const addDays=(days)=>{const d=new Date();d.setDate(d.getDate()+days);return d.toISOString().slice(0,10)};
+const safeNum=(n)=>Number(n||0);
+
+const START_CLIENTS=[
+  {id:'C001',name:'Yogabaar',contact:'Amit Verma',mobile:'9900112233',gst:'29AABCY1234A1Z5',terms:'30 days',status:'Active'},
+  {id:'C002',name:'Shopper Stops',contact:'Rahul Mehta',mobile:'9911223344',gst:'27AABCS9876B2Z6',terms:'45 days',status:'Active'},
+  {id:'C003',name:'Hapillo',contact:'Divya Nair',mobile:'9922334455',gst:'29AABCH5678C3Z7',terms:'15 days',status:'Active'},
+  {id:'C004',name:'Krishna Packaging',contact:'Ravi Kumar',mobile:'9876543210',gst:'29AABCK1234A1Z8',terms:'30 days',status:'Active'},
+];
+const START_VENDORS=[
+  {id:'V001',name:'Sri Ram Packaging',location:'Peenya, Bangalore',rate:4.5,wastageAllowance:3,status:'Active'},
+  {id:'V002',name:'Lakshmi Box Works',location:'Bommasandra, Bangalore',rate:4.25,wastageAllowance:3,status:'Active'},
+  {id:'V003',name:'Ganesh Corrugators',location:'Anekal, Bangalore',rate:4.75,wastageAllowance:3.5,status:'Active'},
+  {id:'V004',name:'Sri Durga Papers',location:'Hosur, TN',rate:4.00,wastageAllowance:3,status:'Active'},
+  {id:'V005',name:'Modern Packaging',location:'Tumkur, KA',rate:4.60,wastageAllowance:3,status:'Active'},
+];
+const START_SKUS=[
+  {id:'S001',name:'Yogabaar Boxes',client:'Yogabaar',size:'28×18×14 cm',ply:'5 Ply',gsm:'150/120/150/120/150',unit:'PCS',stdWeight:0.80,openingStockPCS:5000,dailyUse:700,sellPCS:54.4,sellKG:68,buyKG:40,mfgKG:4.5,logCost:2.5,idealWastage:3,status:'Active'},
+  {id:'S002',name:'Shopper Stops Boxes',client:'Shopper Stops',size:'35×25×20 cm',ply:'3 Ply',gsm:'120/90/120',unit:'PCS',stdWeight:0.60,openingStockPCS:0,dailyUse:450,sellPCS:39,sellKG:65,buyKG:38,mfgKG:4.25,logCost:2,idealWastage:3,status:'Active'},
+  {id:'S003',name:'Hapillo Boxes',client:'Hapillo',size:'30×20×15 cm',ply:'3 Ply',gsm:'120/90/120',unit:'PCS',stdWeight:0.70,openingStockPCS:0,dailyUse:300,sellPCS:43.4,sellKG:62,buyKG:37,mfgKG:4.5,logCost:2,idealWastage:3,status:'Active'},
+  {id:'S004',name:'Krishna 3Ply Box',client:'Krishna Packaging',size:'30×20×15 cm',ply:'3 Ply',gsm:'120/90/120',unit:'KG',stdWeight:0.85,openingStockPCS:0,dailyUse:150,sellPCS:52.7,sellKG:62,buyKG:38,mfgKG:4.5,logCost:2,idealWastage:3,status:'Active'},
+];
+const START_ORDERS=[
+  {id:'O001',date:todayISO(),type:'Job Work',vendor:'Sri Durga Papers',client:'Yogabaar',sku:'Yogabaar Boxes',orderQtyPCS:3000,issuedKG:2474,buyKG:40,mfgKG:4,expectedPCS:3000,vendorDeliveryDate:addDays(3),clientDeliveryDate:addDays(5),status:'In Production',remarks:'Partial order'},
+  {id:'O002',date:todayISO(),type:'Job Work',vendor:'Modern Packaging',client:'Yogabaar',sku:'Yogabaar Boxes',orderQtyPCS:7000,issuedKG:5773,buyKG:40,mfgKG:4.6,expectedPCS:7000,vendorDeliveryDate:addDays(8),clientDeliveryDate:addDays(10),status:'In Production',remarks:'Large order'},
+  {id:'O003',date:todayISO(),type:'Job Work',vendor:'Lakshmi Box Works',client:'Shopper Stops',sku:'Shopper Stops Boxes',orderQtyPCS:5000,issuedKG:3093,buyKG:38,mfgKG:4.25,expectedPCS:5000,vendorDeliveryDate:addDays(6),clientDeliveryDate:addDays(8),status:'In Production',remarks:'Regular order'},
+  {id:'O004',date:todayISO(),type:'Job Work',vendor:'Ganesh Corrugators',client:'Hapillo',sku:'Hapillo Boxes',orderQtyPCS:3000,issuedKG:2165,buyKG:37,mfgKG:4.5,expectedPCS:3000,vendorDeliveryDate:addDays(7),clientDeliveryDate:addDays(9),status:'In Production',remarks:''},
+  {id:'O005',date:todayISO(),type:'Direct Trading',vendor:'Sri Ram Packaging',client:'Krishna Packaging',sku:'Krishna 3Ply Box',orderQtyPCS:1200,issuedKG:0,buyKG:52,mfgKG:0,expectedPCS:1200,vendorDeliveryDate:addDays(2),clientDeliveryDate:addDays(4),status:'Ready to Dispatch',remarks:'Direct bought trading lot'},
+];
+const START_RECEIPTS=[];
+const START_DISPATCHES=[
+  {id:'D001',date:todayISO(),orderId:'',client:'Yogabaar',sku:'Yogabaar Boxes',qtyPCS:2000,qtyKG:1600,sellPCS:54.4,sellKG:68,logistics:3500,invoice:'INV-001',remarks:'Opening stock dispatch'}
+];
+
+const START_RM_ORDERS=[
+  {id:'M001',date:todayISO(),mill:'Karnataka Paper Mills',vendor:'Sri Durga Papers',sku:'Yogabaar Boxes',rmForBoxes:20000,rmKG:16495,buyKG:40,expectedDate:addDays(4),status:'Ordered',remarks:'RM dedicated for Yogabaar job work at Sri Durga Papers'},
+  {id:'M002',date:todayISO(),mill:'South India Paper Mill',vendor:'Lakshmi Box Works',sku:'Shopper Stops Boxes',rmForBoxes:10000,rmKG:6186,buyKG:38,expectedDate:addDays(5),status:'Ordered',remarks:'Dedicated RM for Shopper Stops production'},
+];
+
+function useSupabaseState(table,key,initial){
+  const localKey=`bp_${table}_cloud_v1`;
+  const [state,setState]=useState(()=>{
+    try{const raw=localStorage.getItem(localKey);return raw?JSON.parse(raw):initial}catch(e){return initial}
+  });
+  const [loaded,setLoaded]=useState(false);
+  const [sync,setSync]=useState({status: sb?'Connecting':'Local only', error:''});
+
+  useEffect(()=>{
+    let alive=true;
+    async function load(){
+      if(!sb){ setLoaded(true); return; }
+      try{
+        setSync({status:'Loading cloud',error:''});
+        const {data,error}=await sb.from(table).select('*').order('id',{ascending:true});
+        if(error) throw error;
+        if(!alive) return;
+        if(data && data.length){
+          setState(data);
+          localStorage.setItem(localKey,JSON.stringify(data));
+        }else{
+          // Empty table: keep starter/local data and seed it once so the app opens with usable rows.
+          const seed=state && state.length ? state : initial;
+          if(seed.length){
+            const {error:seedErr}=await sb.from(table).upsert(seed,{onConflict:'id'});
+            if(seedErr) throw seedErr;
+          }
+          setState(seed);
+        }
+        setSync({status:'Cloud synced',error:''});
+      }catch(err){
+        console.error('Supabase load error for',table,err);
+        if(alive) setSync({status:'Cloud error',error:err.message||String(err)});
+      }finally{ if(alive) setLoaded(true); }
+    }
+    load();
+    return()=>{alive=false};
+  },[table]);
+
+  useEffect(()=>{
+    try{localStorage.setItem(localKey,JSON.stringify(state))}catch(e){}
+    if(!sb || !loaded) return;
+    const timer=setTimeout(async()=>{
+      try{
+        if(state.length){
+          const {error}=await sb.from(table).upsert(state,{onConflict:'id'});
+          if(error) throw error;
+        }
+        setSync({status:'Cloud synced',error:''});
+      }catch(err){
+        console.error('Supabase save error for',table,err);
+        setSync({status:'Save error',error:err.message||String(err)});
+      }
+    },450);
+    return()=>clearTimeout(timer);
+  },[table,state,loaded]);
+
+  return [state,setState,sync];
+}
+function genId(prefix,arr){
+  const nums=arr.map(x=>parseInt(String(x.id||'').replace(prefix,''),10)).filter(Boolean);
+  return `${prefix}${String(nums.length?Math.max(...nums)+1:1).padStart(3,'0')}`;
+}
+function exportCSV(data,filename){
+  if(!data.length){alert('No rows to export');return}
+  const keys=Object.keys(data[0]);
+  const csv=[keys.join(','),...data.map(r=>keys.map(k=>`"${String(r[k]??'').replaceAll('"','""')}"`).join(','))].join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=filename;a.click();
+}
+function downloadBackup(payload){
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}));a.download='bangalore_plant_backup.json';a.click();
+}
+
+function Badge({children,color='gray'}){return <span className={`badge ${color}`}>{children}</span>}
+function Button({children,variant='primary',onClick,disabled,type='button',className=''}){return <button type={type} disabled={disabled} onClick={onClick} className={`btn ${variant} ${className}`}>{children}</button>}
+function PageHead({title,sub,children}){return <div className="page-head"><div><h2>{title}</h2>{sub&&<p>{sub}</p>}</div><div className="actions">{children}</div></div>}
+function KPI({label,value,sub,icon,color=''}){return <div className={`kpi ${color}`}><div className="top"><div><label>{label}</label><strong>{value}</strong>{sub&&<small>{sub}</small>}</div><div className="icon">{icon}</div></div></div>}
+function Card({title,children,action}){return <div className="card"><div className="card-head"><div className="card-title">{title}</div>{action}</div><div className="card-body">{children}</div></div>}
+function Modal({title,children,onClose,wide=false}){return <div className="modal-bg"><div className={`modal ${wide?'wide':''}`}><div className="modal-head"><h3>{title}</h3><button className="x" onClick={onClose}>✕</button></div><div className="modal-body">{children}</div></div></div>}
+function Field({label,children,full=false}){return <div className={`field ${full?'full':''}`}><label>{label}</label>{children}</div>}
+function Input({value,onChange,type='text',placeholder='',readOnly=false}){return <input className="inp" type={type} value={value??''} placeholder={placeholder} readOnly={readOnly} onChange={e=>onChange(e.target.value)}/>}
+function Select({value,onChange,options,placeholder='— Select —'}){return <select className="sel" value={value??''} onChange={e=>onChange(e.target.value)}><option value="">{placeholder}</option>{options.map(o=><option key={o} value={o}>{o}</option>)}</select>}
+function Progress({pct,color=''}){const p=Math.max(0,Math.min(100,safeNum(pct)));return <div className={`progress ${color}`}><span style={{width:`${p}%`}}></span></div>}
+
+function DataTable({columns,data,searchText='Search...',children}){
+  const [q,setQ]=useState('');
+  const rows=data.filter(r=>JSON.stringify(r).toLowerCase().includes(q.toLowerCase()));
+  return <>
+    <div className="toolbar no-print"><div className="search"><span>🔍</span><input className="inp" placeholder={searchText} value={q} onChange={e=>setQ(e.target.value)}/></div>{children}<div style={{flex:1}}/><Button variant="secondary" onClick={()=>exportCSV(rows,'export.csv')}>⬇ Export</Button></div>
+    <div className="table-wrap"><table className="table"><thead><tr>{columns.map(c=><th key={c.key}>{c.label}</th>)}</tr></thead><tbody>{rows.length?rows.map((row,i)=><tr key={row.id||i}>{columns.map(c=><td key={c.key} className={c.className||''}>{c.render?c.render(row):row[c.key]}</td>)}</tr>):<tr><td colSpan={columns.length} className="center muted" style={{padding:36}}>No records found</td></tr>}</tbody></table></div>
+    <div className="tiny" style={{marginTop:8}}>{rows.length} rows shown</div>
+  </>
+}
+
+function makeMetrics(skus,orders,receipts,dispatches,rmOrders=[]){
+  const receiptByOrder={}; receipts.forEach(r=>{if(!receiptByOrder[r.orderId])receiptByOrder[r.orderId]={kg:0,pcs:0};receiptByOrder[r.orderId].kg+=safeNum(r.receivedKG);receiptByOrder[r.orderId].pcs+=safeNum(r.receivedPCS)});
+  const dispatchByOrder={}; dispatches.forEach(d=>{if(d.orderId){if(!dispatchByOrder[d.orderId])dispatchByOrder[d.orderId]={kg:0,pcs:0};dispatchByOrder[d.orderId].kg+=safeNum(d.qtyKG);dispatchByOrder[d.orderId].pcs+=safeNum(d.qtyPCS)}});
+  const receiptBySku={}; receipts.forEach(r=>{if(!receiptBySku[r.sku])receiptBySku[r.sku]={kg:0,pcs:0};receiptBySku[r.sku].kg+=safeNum(r.receivedKG);receiptBySku[r.sku].pcs+=safeNum(r.receivedPCS)});
+  const dispatchBySku={}; dispatches.forEach(d=>{if(!dispatchBySku[d.sku])dispatchBySku[d.sku]={kg:0,pcs:0};dispatchBySku[d.sku].kg+=safeNum(d.qtyKG);dispatchBySku[d.sku].pcs+=safeNum(d.qtyPCS)});
+  const rmBySku={}; const rmByVendor={};
+  rmOrders.forEach(r=>{
+    if(r.status==='Cancelled')return;
+    const boxes=safeNum(r.rmForBoxes); const kg=safeNum(r.rmKG);
+    if(!rmBySku[r.sku])rmBySku[r.sku]={boxes:0,kg:0,pendingBoxes:0,pendingKG:0,receivedBoxes:0,receivedKG:0,lines:[]};
+    rmBySku[r.sku].boxes+=boxes; rmBySku[r.sku].kg+=kg; rmBySku[r.sku].lines.push(r);
+    if(r.status==='Received'){rmBySku[r.sku].receivedBoxes+=boxes; rmBySku[r.sku].receivedKG+=kg;} else {rmBySku[r.sku].pendingBoxes+=boxes; rmBySku[r.sku].pendingKG+=kg;}
+    if(!rmByVendor[r.vendor])rmByVendor[r.vendor]={boxes:0,kg:0,lines:[]};
+    rmByVendor[r.vendor].boxes+=boxes; rmByVendor[r.vendor].kg+=kg; rmByVendor[r.vendor].lines.push(r);
+  });
+  const orderRows=orders.map(o=>{
+    const r=receiptByOrder[o.id]||{kg:0,pcs:0}; const d=dispatchByOrder[o.id]||{kg:0,pcs:0};
+    const pendingFG=Math.max(0,safeNum(o.orderQtyPCS)-r.pcs); const pendingDispatch=Math.max(0,safeNum(o.orderQtyPCS)-d.pcs);
+    const progress=safeNum(o.orderQtyPCS)?r.pcs/safeNum(o.orderQtyPCS)*100:0;
+    const wastageKG=Math.max(0,safeNum(o.issuedKG)-r.kg); const wastagePct=safeNum(o.issuedKG)?wastageKG/safeNum(o.issuedKG)*100:0;
+    return {...o,receivedKG:r.kg,receivedPCS:r.pcs,dispatchedKG:d.kg,dispatchedPCS:d.pcs,pendingFG,pendingDispatch,progress,wastageKG,wastagePct};
+  });
+  const skuRows=skus.map(s=>{
+    const rec=receiptBySku[s.name]||{kg:0,pcs:0}; const disp=dispatchBySku[s.name]||{kg:0,pcs:0};
+    const onHandPCS=Math.max(0,safeNum(s.openingStockPCS)+rec.pcs-disp.pcs);
+    const placedPCS=orderRows.filter(o=>o.sku===s.name && !['Closed','Cancelled'].includes(o.status)).reduce((a,o)=>a+o.pendingFG,0);
+    const clientDemandPCS=orderRows.filter(o=>o.sku===s.name && !['Cancelled'].includes(o.status)).reduce((a,o)=>a+safeNum(o.orderQtyPCS),0);
+    const dispatchedPCS=dispatches.filter(d=>d.sku===s.name).reduce((a,d)=>a+safeNum(d.qtyPCS),0);
+    const pendingDispatchPCS=Math.max(0,clientDemandPCS-dispatchedPCS);
+    const rm=rmBySku[s.name]||{boxes:0,kg:0,pendingBoxes:0,pendingKG:0,receivedBoxes:0,receivedKG:0,lines:[]};
+    const daily=safeNum(s.dailyUse); const days=daily?onHandPCS/daily:0; const totalCover=daily?(onHandPCS+placedPCS)/daily:0; const futureCover=daily?(onHandPCS+placedPCS+rm.pendingBoxes)/daily:0; const safety=daily*7; const gap=onHandPCS-safety;
+    let alert='Safe',color='green'; if(onHandPCS<=0){alert='No Stock';color='red'} else if(days<7){alert='Below 7 Days';color='red'} else if(days<12){alert='Watch';color='amber'}
+    return {...s,onHandPCS,placedPCS,totalAvailablePCS:onHandPCS+placedPCS,futureAvailablePCS:onHandPCS+placedPCS+rm.pendingBoxes,clientDemandPCS,dispatchedPCS,pendingDispatchPCS,days,totalCover,futureCover,safety,gap,alert,color,rmOrderedBoxes:rm.boxes,rmOrderedKG:rm.kg,rmPendingBoxes:rm.pendingBoxes,rmPendingKG:rm.pendingKG,rmReceivedBoxes:rm.receivedBoxes,rmReceivedKG:rm.receivedKG,rmLines:rm.lines};
+  });
+  const dispatchPnL=dispatches.map(d=>{
+    const sku=skus.find(s=>s.name===d.sku)||{}; const o=orders.find(x=>x.id===d.orderId)||{}; const rec=receiptByOrder[d.orderId]||{kg:0,pcs:0};
+    const qtyPCS=safeNum(d.qtyPCS), qtyKG=safeNum(d.qtyKG)||qtyPCS*safeNum(sku.stdWeight);
+    const sellRate=qtyPCS?safeNum(d.sellPCS||sku.sellPCS):safeNum(d.sellKG||sku.sellKG);
+    const revenue=qtyPCS?sellRate*qtyPCS:sellRate*qtyKG;
+    let materialCost=0, mfgCost=0;
+    if(d.orderId && o.id){
+      const costBasePCS=Math.max(safeNum(o.orderQtyPCS),safeNum(o.expectedPCS),rec.pcs,1);
+      materialCost=(safeNum(o.issuedKG)*safeNum(o.buyKG))/costBasePCS*qtyPCS;
+      mfgCost=(Math.max(rec.kg,qtyKG)*safeNum(o.mfgKG||sku.mfgKG))/Math.max(costBasePCS,1)*qtyPCS;
+    }else{
+      materialCost=qtyKG*safeNum(sku.buyKG);
+      mfgCost=qtyKG*safeNum(sku.mfgKG);
+    }
+    const logistics=safeNum(d.logistics); const totalCost=materialCost+mfgCost+logistics; const profit=revenue-totalCost; const margin=revenue?profit/revenue*100:0;
+    return {...d,revenue,materialCost,mfgCost,logistics,totalCost,profit,margin};
+  });
+  const totals={
+    onHand:skuRows.reduce((a,s)=>a+s.onHandPCS,0), placed:skuRows.reduce((a,s)=>a+s.placedPCS,0), available:skuRows.reduce((a,s)=>a+s.totalAvailablePCS,0),
+    daily:skuRows.reduce((a,s)=>a+safeNum(s.dailyUse),0), pendingDispatch:skuRows.reduce((a,s)=>a+s.pendingDispatchPCS,0), dispatched:dispatches.reduce((a,d)=>a+safeNum(d.qtyPCS),0),
+    rmIssued:orders.reduce((a,o)=>a+safeNum(o.issuedKG),0), fgReceivedKG:receipts.reduce((a,r)=>a+safeNum(r.receivedKG),0), fgReceivedPCS:receipts.reduce((a,r)=>a+safeNum(r.receivedPCS),0),
+    sales:dispatchPnL.reduce((a,r)=>a+r.revenue,0), cost:dispatchPnL.reduce((a,r)=>a+r.totalCost,0), profit:dispatchPnL.reduce((a,r)=>a+r.profit,0),
+    rmOrderedBoxes:rmOrders.filter(r=>r.status!=='Cancelled').reduce((a,r)=>a+safeNum(r.rmForBoxes),0),
+    rmPendingBoxes:rmOrders.filter(r=>r.status!=='Cancelled'&&r.status!=='Received').reduce((a,r)=>a+safeNum(r.rmForBoxes),0),
+    rmReceivedBoxes:rmOrders.filter(r=>r.status==='Received').reduce((a,r)=>a+safeNum(r.rmForBoxes),0),
+    rmOrderedKG:rmOrders.filter(r=>r.status!=='Cancelled').reduce((a,r)=>a+safeNum(r.rmKG),0),
+  };
+  return {receiptByOrder,dispatchByOrder,rmBySku,rmByVendor,orderRows,skuRows,dispatchPnL,totals};
+}
+
+function Dashboard({metrics,setPage}){
+  const {totals,skuRows,orderRows,dispatchPnL}=metrics;
+  const low=skuRows.filter(s=>s.color==='red');
+  const overdue=orderRows.filter(o=>o.status!=='Closed' && o.vendorDeliveryDate<todayISO() && o.pendingFG>0);
+  const active=orderRows.filter(o=>!['Closed','Cancelled'].includes(o.status));
+  return <>
+    <PageHead title="Operations Control Center" sub="One screen for vendor orders, stock, dispatch pending, RM vs FG and profit/loss">
+      <Button variant="secondary" onClick={()=>setPage('orders')}>Manage Vendor Orders</Button>
+      <Button variant="primary" onClick={()=>setPage('dispatch')}>Dispatch Control</Button>
+    </PageHead>
+    <div className="grid kpi-grid">
+      <KPI label="Stock in Hand" value={fN(totals.onHand)} sub="Finished goods available" icon="📦" color="green"/>
+      <KPI label="Placed to Make" value={fN(totals.placed)} sub={`Balance with vendors · RM from mills ${fN(totals.rmPendingBoxes||0)}`} icon="🏭" color="amber"/>
+      <KPI label="Pending Dispatch" value={fN(totals.pendingDispatch)} sub="Client order balance" icon="🚚" color="red"/>
+      <KPI label="Dispatched Qty" value={fN(totals.dispatched)} sub="PCS dispatched" icon="✅" color="blue"/>
+      <KPI label="Net Profit" value={fC(totals.profit)} sub={`Sales ${fC(totals.sales)} · Cost ${fC(totals.cost)}`} icon="💰" color={totals.profit>=0?'green':'red'}/>
+      <KPI label="RM vs FG" value={`${fN(totals.rmIssued)} KG`} sub={`Received ${fN(totals.fgReceivedKG)} KG / ${fN(totals.fgReceivedPCS)} PCS`} icon="⚖️" color="purple"/>
+    </div>
+    <div className="split">
+      <Card title="Vendor Order Monitor" action={<Button variant="outline" onClick={()=>setPage('orders')}>Open</Button>}>
+        <div className="table-wrap"><table className="table" style={{minWidth:780}}><thead><tr><th>Order</th><th>Vendor</th><th>SKU</th><th>Order Qty</th><th>FG Received</th><th>Progress</th><th>Client Date</th><th>Status</th></tr></thead><tbody>{active.slice(0,8).map(o=><tr key={o.id}><td className="num blue-t">{o.id}</td><td>{o.vendor}</td><td>{o.sku}</td><td className="num">{fN(o.orderQtyPCS)}</td><td>{fN(o.receivedPCS)} PCS<br/><span className="tiny">{fN(o.receivedKG)} KG</span></td><td><span className="num">{fP(o.progress)}</span><Progress pct={o.progress} color={o.progress<40?'red':o.progress<80?'amber':'green'}/></td><td>{o.clientDeliveryDate}</td><td><StatusBadge status={o.status} pendingFG={o.pendingFG}/></td></tr>)}</tbody></table></div>
+      </Card>
+      <Card title="Immediate Attention">
+        <div style={{display:'grid',gap:10}}>
+          <AlertLine title="Low stock SKUs" value={low.length} sub={low.map(s=>s.name).join(', ')||'All safe'} color={low.length?'red':'green'}/>
+          <AlertLine title="Overdue vendor deliveries" value={overdue.length} sub={overdue.map(o=>`${o.id} ${o.vendor}`).join(', ')||'No overdue vendor delivery'} color={overdue.length?'red':'green'}/>
+          <AlertLine title="Dispatch P&L rows" value={dispatchPnL.length} sub={`Current profit: ${fC(totals.profit)}`} color={totals.profit>=0?'green':'red'}/>
+        </div>
+      </Card>
+    </div>
+  </>
+}
+function AlertLine({title,value,sub,color}){return <div className={`kpi ${color}`} style={{padding:13}}><label>{title}</label><strong style={{fontSize:22}}>{value}</strong><small>{sub}</small></div>}
+function StatusBadge({status,pendingFG}){let color='gray'; if(status==='Closed')color='green'; else if(status==='Ready to Dispatch')color='blue'; else if(status==='In Production')color='amber'; else if(status==='Delayed')color='red'; if(pendingFG===0 && status!=='Cancelled') color='green'; return <Badge color={color}>{pendingFG===0 && status!=='Cancelled'?'FG Complete':status}</Badge>}
+
+function OrderForm({skus,vendors,clients,initial,onSave,onClose}){
+  const blank={date:todayISO(),type:'Job Work',vendor:'',client:'',sku:'',orderQtyPCS:'',issuedKG:'',buyKG:'',mfgKG:'',expectedPCS:'',vendorDeliveryDate:addDays(5),clientDeliveryDate:addDays(7),status:'In Production',remarks:''};
+  const [f,setF]=useState(initial||blank);
+  const set=(k,v)=>setF(p=>{
+    const u={...p,[k]:v};
+    if(k==='sku'){
+      const s=skus.find(x=>x.name===v); if(s){u.client=s.client;u.buyKG=s.buyKG;u.mfgKG=s.mfgKG;u.expectedPCS=u.orderQtyPCS||'';}
+    }
+    const s=skus.find(x=>x.name===u.sku);
+    if((k==='orderQtyPCS'||k==='sku') && s && safeNum(u.orderQtyPCS)>0){
+      const ideal=safeNum(s.idealWastage)/100; u.issuedKG=Math.round(safeNum(u.orderQtyPCS)*safeNum(s.stdWeight)/(1-ideal)); u.expectedPCS=u.orderQtyPCS;
+    }
+    return u;
+  });
+  const sku=skus.find(s=>s.name===f.sku)||{};
+  const expectedKG=safeNum(f.orderQtyPCS)*safeNum(sku.stdWeight);
+  const rmCost=safeNum(f.issuedKG)*safeNum(f.buyKG);
+  const mfgCost=expectedKG*safeNum(f.mfgKG);
+  return <Modal title={initial?'Edit Vendor Order':'New Vendor / Job Work Order'} onClose={onClose} wide>
+    <div className="form-grid">
+      <Field label="Order Date"><Input type="date" value={f.date} onChange={v=>set('date',v)}/></Field>
+      <Field label="Order Type"><Select value={f.type} onChange={v=>set('type',v)} options={['Job Work','Direct Trading','Own Manufacturing']}/></Field>
+      <Field label="Vendor"><Select value={f.vendor} onChange={v=>set('vendor',v)} options={vendors.map(v=>v.name)}/></Field>
+      <Field label="Client"><Select value={f.client} onChange={v=>set('client',v)} options={clients.map(c=>c.name)}/></Field>
+      <Field label="SKU"><Select value={f.sku} onChange={v=>set('sku',v)} options={skus.map(s=>s.name)}/></Field>
+      <Field label="Order Qty / Client Requirement (PCS)"><Input type="number" value={f.orderQtyPCS} onChange={v=>set('orderQtyPCS',v)}/></Field>
+      <Field label="Issued RM to Vendor (KG)"><Input type="number" value={f.issuedKG} onChange={v=>set('issuedKG',v)}/></Field>
+      <Field label="Expected FG PCS"><Input type="number" value={f.expectedPCS} onChange={v=>set('expectedPCS',v)}/></Field>
+      <Field label="Buying Cost / KG"><Input type="number" value={f.buyKG} onChange={v=>set('buyKG',v)}/></Field>
+      <Field label="Job Work / Mfg Cost / KG"><Input type="number" value={f.mfgKG} onChange={v=>set('mfgKG',v)}/></Field>
+      <Field label="Vendor Delivery Date"><Input type="date" value={f.vendorDeliveryDate} onChange={v=>set('vendorDeliveryDate',v)}/></Field>
+      <Field label="Client Delivery Date"><Input type="date" value={f.clientDeliveryDate} onChange={v=>set('clientDeliveryDate',v)}/></Field>
+      <Field label="Status"><Select value={f.status} onChange={v=>set('status',v)} options={['In Production','Ready to Dispatch','Part Dispatched','Closed','Delayed','Cancelled']}/></Field>
+      <Field label="Remarks"><Input value={f.remarks} onChange={v=>set('remarks',v)}/></Field>
+    </div>
+    <div className="calc-strip"><div className="calc-item"><label>Auto RM Cost</label><strong>{fC(rmCost)}</strong></div><div className="calc-item"><label>Expected FG KG</label><strong>{fN(expectedKG)} KG</strong></div><div className="calc-item"><label>Mfg Cost</label><strong>{fC(mfgCost)}</strong></div><div className="calc-item"><label>Total Cost Before Dispatch</label><strong>{fC(rmCost+mfgCost)}</strong></div></div>
+    <div className="actions" style={{justifyContent:'flex-end',marginTop:18}}><Button variant="secondary" onClick={onClose}>Cancel</Button><Button onClick={()=>onSave(f)}>{initial?'Update Order':'Save Order'}</Button></div>
+  </Modal>
+}
+
+function ReceiptForm({order,skus,initial,onSave,onClose}){
+  const [f,setF]=useState(initial||{date:todayISO(),orderId:order?.id||'',vendor:order?.vendor||'',sku:order?.sku||'',receivedKG:'',receivedPCS:'',remarks:''});
+  const set=(k,v)=>setF(p=>({...p,[k]:v}));
+  const issued=safeNum(order?.issuedKG); const rkg=safeNum(f.receivedKG); const wast=issued?Math.max(0,issued-rkg):0; const wastPct=issued?wast/issued*100:0;
+  return <Modal title={`FG Receipt - ${order?.id||''}`} onClose={onClose}>
+    <div className="form-grid">
+      <Field label="Receipt Date"><Input type="date" value={f.date} onChange={v=>set('date',v)}/></Field>
+      <Field label="Order ID"><Input value={f.orderId} onChange={v=>set('orderId',v)} readOnly/></Field>
+      <Field label="Vendor"><Input value={f.vendor} onChange={v=>set('vendor',v)} readOnly/></Field>
+      <Field label="SKU"><Input value={f.sku} onChange={v=>set('sku',v)} readOnly/></Field>
+      <Field label="Received Goods KG"><Input type="number" value={f.receivedKG} onChange={v=>set('receivedKG',v)}/></Field>
+      <Field label="Received Goods PCS"><Input type="number" value={f.receivedPCS} onChange={v=>set('receivedPCS',v)}/></Field>
+      <Field label="Remarks" full><Input value={f.remarks} onChange={v=>set('remarks',v)}/></Field>
+    </div>
+    <div className="calc-strip"><div className="calc-item"><label>Issued RM</label><strong>{fN(issued)} KG</strong></div><div className="calc-item"><label>Received FG</label><strong>{fN(rkg)} KG</strong></div><div className="calc-item"><label>Wastage KG</label><strong className={wastPct>5?'red-t':''}>{fN(wast)} KG</strong></div><div className="calc-item"><label>Wastage %</label><strong className={wastPct>5?'red-t':''}>{fP(wastPct)}</strong></div></div>
+    <div className="actions" style={{justifyContent:'flex-end',marginTop:18}}><Button variant="secondary" onClick={onClose}>Cancel</Button><Button onClick={()=>onSave(f)}>Save Receipt</Button></div>
+  </Modal>
+}
+
+function DispatchForm({order,skus,clients,initial,onSave,onClose}){
+  const sku=skus.find(s=>s.name===(order?.sku||initial?.sku))||{};
+  const [f,setF]=useState(initial||{date:todayISO(),orderId:order?.id||'',client:order?.client||sku.client||'',sku:order?.sku||'',qtyPCS:'',qtyKG:'',sellPCS:sku.sellPCS||'',sellKG:sku.sellKG||'',logistics:'',invoice:'',remarks:''});
+  const set=(k,v)=>setF(p=>{const u={...p,[k]:v}; if(k==='sku'){const s=skus.find(x=>x.name===v); if(s){u.client=s.client;u.sellPCS=s.sellPCS;u.sellKG=s.sellKG}} if(k==='qtyPCS'){const s=skus.find(x=>x.name===u.sku); if(s)u.qtyKG=(safeNum(v)*safeNum(s.stdWeight)).toFixed(0)} return u});
+  const revenue=safeNum(f.qtyPCS)?safeNum(f.qtyPCS)*safeNum(f.sellPCS):safeNum(f.qtyKG)*safeNum(f.sellKG);
+  return <Modal title="Record Dispatch" onClose={onClose}>
+    <div className="form-grid">
+      <Field label="Dispatch Date"><Input type="date" value={f.date} onChange={v=>set('date',v)}/></Field>
+      <Field label="Against Order ID"><Input value={f.orderId} onChange={v=>set('orderId',v)} readOnly={!!order}/></Field>
+      <Field label="Client"><Select value={f.client} onChange={v=>set('client',v)} options={clients.map(c=>c.name)}/></Field>
+      <Field label="SKU"><Select value={f.sku} onChange={v=>set('sku',v)} options={skus.map(s=>s.name)}/></Field>
+      <Field label="Dispatched Qty PCS"><Input type="number" value={f.qtyPCS} onChange={v=>set('qtyPCS',v)}/></Field>
+      <Field label="Dispatched Qty KG"><Input type="number" value={f.qtyKG} onChange={v=>set('qtyKG',v)}/></Field>
+      <Field label="Selling Price / PCS"><Input type="number" value={f.sellPCS} onChange={v=>set('sellPCS',v)}/></Field>
+      <Field label="Selling Price / KG"><Input type="number" value={f.sellKG} onChange={v=>set('sellKG',v)}/></Field>
+      <Field label="Logistics Cost"><Input type="number" value={f.logistics} onChange={v=>set('logistics',v)}/></Field>
+      <Field label="Invoice No"><Input value={f.invoice} onChange={v=>set('invoice',v)}/></Field>
+      <Field label="Remarks" full><Input value={f.remarks} onChange={v=>set('remarks',v)}/></Field>
+    </div>
+    <div className="calc-strip"><div className="calc-item"><label>Revenue</label><strong>{fC(revenue)}</strong></div><div className="calc-item"><label>Logistics</label><strong>{fC(f.logistics)}</strong></div><div className="calc-item"><label>Net Before Cost</label><strong>{fC(revenue-safeNum(f.logistics))}</strong></div><div className="calc-item"><label>Stock Impact</label><strong>-{fN(f.qtyPCS)} PCS</strong></div></div>
+    <div className="actions" style={{justifyContent:'flex-end',marginTop:18}}><Button variant="secondary" onClick={onClose}>Cancel</Button><Button onClick={()=>onSave(f)}>Save Dispatch</Button></div>
+  </Modal>
+}
+
+function OrdersPage({skus,vendors,clients,orders,setOrders,receipts,setReceipts,dispatches,setDispatches,metrics}){
+  const [modal,setModal]=useState(null); const [selected,setSelected]=useState(null);
+  const saveOrder=(row)=>{ if(row.id){setOrders(p=>p.map(o=>o.id===row.id?row:o))} else {setOrders(p=>[{...row,id:genId('O',p)},...p])} setModal(null)};
+  const saveReceipt=(row)=>{setReceipts(p=>[{...row,id:genId('R',p)},...p]);setModal(null)};
+  const saveDispatch=(row)=>{setDispatches(p=>[{...row,id:genId('D',p)},...p]);setModal(null)};
+  const cols=[
+    {key:'id',label:'Order',render:o=><button className="btn ghost" onClick={()=>setSelected(o)}><span className="blue-t num">{o.id}</span></button>},
+    {key:'vendor',label:'Vendor / Client',render:o=><><b>{o.vendor}</b><br/><span className="tiny">Client: {o.client}</span></>},
+    {key:'sku',label:'SKU',render:o=><><b>{o.sku}</b><br/><span className="tiny">{o.type}</span></>},
+    {key:'orderQtyPCS',label:'Order Qty',render:o=><span className="num">{fN(o.orderQtyPCS)} PCS</span>},
+    {key:'receivedPCS',label:'FG Received',render:o=><><span className="num green-t">{fN(o.receivedPCS)} PCS</span><br/><span className="tiny">{fN(o.receivedKG)} KG received</span></>},
+    {key:'pendingFG',label:'Pending at Vendor',render:o=><><span className={`num ${o.pendingFG?'amber-t':'green-t'}`}>{fN(o.pendingFG)} PCS</span><Progress pct={o.progress} color={o.progress<40?'red':o.progress<80?'amber':'green'}/></>},
+    {key:'dates',label:'Delivery Dates',render:o=><><span className="tiny">Vendor</span> {o.vendorDeliveryDate}<br/><span className="tiny">Client</span> {o.clientDeliveryDate}</>},
+    {key:'status',label:'Status',render:o=><StatusBadge status={o.status} pendingFG={o.pendingFG}/>},
+    {key:'actions',label:'Actions',render:o=><div className="actions"><Button variant="outline" onClick={()=>setModal({type:'edit',order:o})}>Edit</Button><Button variant="secondary" onClick={()=>setModal({type:'receipt',order:o})}>FG Receipt</Button><Button variant="blue" onClick={()=>setModal({type:'dispatch',order:o})}>Dispatch</Button></div>},
+  ];
+  return <>
+    <PageHead title="Vendor Order Management" sub="Monitor every ongoing vendor order, production progress, delivery commitment and pending FG">
+      <Button variant="primary" onClick={()=>setModal({type:'new'})}>+ New Vendor Order</Button>
+    </PageHead>
+    <DataTable columns={cols} data={metrics.orderRows} searchText="Search order, vendor, client, SKU..." />
+    {modal?.type==='new'&&<OrderForm skus={skus} vendors={vendors} clients={clients} onSave={saveOrder} onClose={()=>setModal(null)}/>} 
+    {modal?.type==='edit'&&<OrderForm skus={skus} vendors={vendors} clients={clients} initial={modal.order} onSave={saveOrder} onClose={()=>setModal(null)}/>} 
+    {modal?.type==='receipt'&&<ReceiptForm order={modal.order} skus={skus} onSave={saveReceipt} onClose={()=>setModal(null)}/>} 
+    {modal?.type==='dispatch'&&<DispatchForm order={modal.order} skus={skus} clients={clients} onSave={saveDispatch} onClose={()=>setModal(null)}/>} 
+    {selected&&<OrderDetail order={selected} metrics={metrics} skus={skus} onClose={()=>setSelected(null)}/>} 
+  </>
+}
+function OrderDetail({order,metrics,skus,onClose}){
+  const o=metrics.orderRows.find(x=>x.id===order.id)||order;
+  const sku=skus.find(s=>s.name===o.sku)||{};
+  const cost=safeNum(o.issuedKG)*safeNum(o.buyKG)+safeNum(o.receivedKG)*safeNum(o.mfgKG);
+  return <Modal title={`Order Detail - ${o.id}`} onClose={onClose} wide>
+    <div className="detail-grid">
+      <div className="detail"><label>Vendor</label><strong>{o.vendor}</strong></div><div className="detail"><label>Client</label><strong>{o.client}</strong></div><div className="detail"><label>SKU</label><strong>{o.sku}</strong></div><div className="detail"><label>Status</label><strong><StatusBadge status={o.status} pendingFG={o.pendingFG}/></strong></div>
+      <div className="detail"><label>Order Qty</label><strong>{fN(o.orderQtyPCS)} PCS</strong></div><div className="detail"><label>Received</label><strong>{fN(o.receivedPCS)} PCS / {fN(o.receivedKG)} KG</strong></div><div className="detail"><label>Dispatched</label><strong>{fN(o.dispatchedPCS)} PCS</strong></div><div className="detail"><label>Pending Dispatch</label><strong>{fN(o.pendingDispatch)} PCS</strong></div>
+      <div className="detail"><label>RM Issued</label><strong>{fN(o.issuedKG)} KG</strong></div><div className="detail"><label>Wastage</label><strong className={o.wastagePct>5?'red-t':'green-t'}>{fN(o.wastageKG)} KG / {fP(o.wastagePct)}</strong></div><div className="detail"><label>Cost Booked</label><strong>{fC(cost)}</strong></div><div className="detail"><label>Box Weight</label><strong>{sku.stdWeight||0} KG / PCS</strong></div>
+    </div>
+  </Modal>
+}
+
+
+function RMOrderForm({skus,vendors,initial,onSave,onClose}){
+  const blank={date:todayISO(),mill:'',vendor:'',sku:'',rmForBoxes:'',rmKG:'',buyKG:'',expectedDate:addDays(4),status:'Ordered',remarks:''};
+  const [f,setF]=useState({...blank,...(initial||{})});
+  const set=(k,v)=>setF(p=>{
+    const u={...p,[k]:v};
+    const sku=skus.find(s=>s.name===u.sku);
+    if(k==='sku' && sku){u.buyKG=sku.buyKG||u.buyKG;}
+    if((k==='sku'||k==='rmForBoxes') && sku && safeNum(u.rmForBoxes)>0){
+      const ideal=safeNum(sku.idealWastage)/100;
+      u.rmKG=Math.round(safeNum(u.rmForBoxes)*safeNum(sku.stdWeight)/(1-ideal));
+    }
+    return u;
+  });
+  const rmValue=safeNum(f.rmKG)*safeNum(f.buyKG);
+  return <Modal title={f.id?'Edit Mill RM Order':'Add RM Order to Mill'} onClose={onClose} wide>
+    <div className="form-grid">
+      <Field label="RM Order Date"><Input type="date" value={f.date} onChange={v=>set('date',v)}/></Field>
+      <Field label="Mill Name"><Input value={f.mill} onChange={v=>set('mill',v)} placeholder="e.g. Karnataka Paper Mills"/></Field>
+      <Field label="Dedicated Vendor / Job Worker"><Select value={f.vendor} onChange={v=>set('vendor',v)} options={vendors.map(v=>v.name)}/></Field>
+      <Field label="SKU / Box for which RM is ordered"><Select value={f.sku} onChange={v=>set('sku',v)} options={skus.map(s=>s.name)}/></Field>
+      <Field label="RM Ordered for Box Count (PCS)"><Input type="number" value={f.rmForBoxes} onChange={v=>set('rmForBoxes',v)} placeholder="e.g. 20000 boxes"/></Field>
+      <Field label="Estimated RM KG"><Input type="number" value={f.rmKG} onChange={v=>set('rmKG',v)}/></Field>
+      <Field label="Buying Cost / KG"><Input type="number" value={f.buyKG} onChange={v=>set('buyKG',v)}/></Field>
+      <Field label="Expected RM Arrival"><Input type="date" value={f.expectedDate} onChange={v=>set('expectedDate',v)}/></Field>
+      <Field label="Status"><Select value={f.status} onChange={v=>set('status',v)} options={['Ordered','In Transit','Received','Cancelled']}/></Field>
+      <Field label="Remarks"><Input value={f.remarks} onChange={v=>set('remarks',v)}/></Field>
+    </div>
+    <div className="calc-strip"><div className="calc-item"><label>RM for Boxes</label><strong>{fN(f.rmForBoxes)} PCS</strong></div><div className="calc-item"><label>Estimated RM</label><strong>{fN(f.rmKG)} KG</strong></div><div className="calc-item"><label>RM Value</label><strong>{fC(rmValue)}</strong></div><div className="calc-item"><label>Dedicated To</label><strong>{f.vendor||'Vendor not selected'}</strong></div></div>
+    <div className="actions" style={{justifyContent:'flex-end',marginTop:18}}><Button variant="secondary" onClick={onClose}>Cancel</Button><Button onClick={()=>onSave(f)}>{f.id?'Update RM Order':'Save RM Order'}</Button></div>
+  </Modal>
+}
+
+function RMOrderDetail({rm,onEdit,onClose}){
+  return <Modal title={`Mill RM Order Detail - ${rm.id}`} onClose={onClose}>
+    <div className="detail-grid">
+      <div className="detail"><label>Mill</label><strong>{rm.mill}</strong></div><div className="detail"><label>Dedicated Vendor</label><strong>{rm.vendor}</strong></div><div className="detail"><label>SKU</label><strong>{rm.sku}</strong></div><div className="detail"><label>Status</label><strong><Badge color={rm.status==='Received'?'green':rm.status==='Cancelled'?'red':'amber'}>{rm.status}</Badge></strong></div>
+      <div className="detail"><label>RM For Boxes</label><strong>{fN(rm.rmForBoxes)} PCS</strong></div><div className="detail"><label>RM KG</label><strong>{fN(rm.rmKG)} KG</strong></div><div className="detail"><label>Buying Cost</label><strong>{fC(rm.buyKG)}/KG</strong></div><div className="detail"><label>Expected Arrival</label><strong>{rm.expectedDate}</strong></div>
+    </div>
+    <div className="actions" style={{justifyContent:'flex-end',marginTop:18}}><Button variant="secondary" onClick={onClose}>Close</Button><Button onClick={()=>onEdit(rm)}>Edit RM Order</Button></div>
+  </Modal>
+}
+
+function InventoryPage({skus,setSkus,vendors,rmOrders,setRmOrders,metrics}){
+  const [selectedOrder,setSelectedOrder]=useState(null);
+  const [selectedRM,setSelectedRM]=useState(null);
+  const [rmModal,setRmModal]=useState(null);
+  const setDaily=(id,val)=>setSkus(p=>p.map(s=>s.id===id?{...s,dailyUse:val}:s));
+  const setOpening=(id,val)=>setSkus(p=>p.map(s=>s.id===id?{...s,openingStockPCS:val}:s));
+  const saveRMOrder=(row)=>{ if(row.id){setRmOrders(p=>p.map(r=>r.id===row.id?row:r))} else {setRmOrders(p=>[{...row,id:genId('M',p)},...p])} setRmModal(null); setSelectedRM(null); };
+  const {totals,skuRows,orderRows}=metrics;
+  const prodForSku=(sku)=>orderRows.filter(o=>o.sku===sku.name && !['Closed','Cancelled'].includes(o.status));
+  const cols=[
+    {key:'sku',label:'SKU / Client',render:s=><><b>{s.name}</b><br/><span className="tiny">{s.client} · {s.ply} · {s.size}</span></>},
+    {key:'stock',label:'Stock I Have',render:s=><><input className="inp" style={{width:110}} type="number" value={s.openingStockPCS} onChange={e=>setOpening(s.id,e.target.value)}/><br/><span className="tiny">Live FG: <b>{fN(s.onHandPCS)}</b> PCS</span></>},
+    {key:'millrm',label:'RM Order to Mills',render:s=><div style={{minWidth:210}}>{s.rmLines?.length? s.rmLines.map(r=><button key={r.id} onClick={()=>setSelectedRM(r)} className={`badge ${r.status==='Received'?'green':'amber'}`} style={{border:0,margin:'0 5px 5px 0'}}>{r.id}: {fN(r.rmForBoxes)} boxes · {r.vendor}</button>):<Badge color="gray">No RM order</Badge>}<br/><button className="btn ghost" style={{padding:'4px 0',fontSize:11}} onClick={()=>setRmModal({sku:s.name,buyKG:s.buyKG})}>+ Add RM for this SKU</button></div>},
+    {key:'placed',label:'Production Orders',render:s=>{const list=prodForSku(s);return <div style={{minWidth:220}}>{list.length?list.map(o=><button key={o.id} onClick={()=>setSelectedOrder(o)} className="badge amber" style={{border:0,margin:'0 5px 5px 0'}}>{o.id}: {fN(o.pendingFG)} PCS · {o.vendor}</button>):<Badge color="gray">No active production</Badge>}<br/><span className="tiny">Placed to make: <b>{fN(s.placedPCS)}</b> PCS</span></div>}},
+    {key:'available',label:'Cover Qty',render:s=><><span className="num blue-t">{fN(s.totalAvailablePCS)} PCS</span><br/><span className="tiny">Future incl. mill RM: <b>{fN(s.futureAvailablePCS)}</b></span></>},
+    {key:'daily',label:'Daily Use',render:s=><><input className="inp" style={{width:95}} type="number" value={s.dailyUse} onChange={e=>setDaily(s.id,e.target.value)}/><br/><span className="tiny">PCS/day</span></>},
+    {key:'safety',label:'7-Day Safety',render:s=><>{fN(s.safety)} PCS<br/><span className={s.gap<0?'red-t tiny':'green-t tiny'}>{s.gap<0?`Need ${fN(Math.abs(s.gap))}`:`Free ${fN(s.gap)}`}</span></>},
+    {key:'coverdays',label:'Days Cover',render:s=><><span className={`num ${s.days<7?'red-t':'green-t'}`}>{fN(s.days,1)} days</span><br/><span className="tiny">With production: {fN(s.totalCover,1)} days</span><br/><span className="tiny">With RM: {fN(s.futureCover,1)} days</span></>},
+    {key:'pending',label:'Dispatch Pending',render:s=><span className="num red-t">{fN(s.pendingDispatchPCS)} PCS</span>},
+    {key:'status',label:'Status',render:s=><Badge color={s.color}>{s.alert}</Badge>},
+  ];
+  return <>
+    <PageHead title="Inventory Control" sub="Stock I have + stock placed to make + mill RM orders dedicated to vendors + safety stock prediction">
+      <Button variant="secondary" onClick={()=>exportCSV([...skuRows],'inventory_control.csv')}>⬇ Export Inventory</Button>
+      <Button variant="primary" onClick={()=>setRmModal({})}>+ Add Mill RM Order</Button>
+    </PageHead>
+    <div className="grid kpi-grid" style={{gridTemplateColumns:'repeat(6,minmax(150px,1fr))'}}>
+      <KPI label="Stock I Have" value={fN(totals.onHand)} sub="Live FG stock" icon="📦" color="green"/>
+      <KPI label="Placed to Make" value={fN(totals.placed)} sub="Production order balance" icon="🏭" color="amber"/>
+      <KPI label="RM Ordered from Mills" value={fN(totals.rmPendingBoxes)} sub={`${fN(totals.rmOrderedKG)} KG total RM`} icon="🧻" color="purple"/>
+      <KPI label="Available + Pipeline" value={fN(totals.available)} sub="FG stock + production" icon="📊" color="blue"/>
+      <KPI label="Daily Consumption" value={fN(totals.daily)} sub="Entered by you" icon="📉"/>
+      <KPI label="Pending Dispatch" value={fN(totals.pendingDispatch)} sub="Client demand balance" icon="🚚" color="red"/>
+    </div>
+    <Card title="Inventory + Mill RM + Production Pipeline"><DataTable columns={cols} data={skuRows} searchText="Search SKU, client, vendor, mill RM..." /></Card>
+    {rmModal&&<RMOrderForm skus={skus} vendors={vendors} initial={rmModal.id?rmModal:rmModal} onSave={saveRMOrder} onClose={()=>setRmModal(null)}/>} 
+    {selectedRM&&<RMOrderDetail rm={selectedRM} onEdit={(r)=>{setSelectedRM(null);setRmModal(r)}} onClose={()=>setSelectedRM(null)}/>} 
+    {selectedOrder&&<OrderDetail order={selectedOrder} metrics={metrics} skus={skus} onClose={()=>setSelectedOrder(null)}/>} 
+  </>
+}
+
+function JobWorkPage({orders,receipts,setReceipts,metrics,skus}){
+  const [modal,setModal]=useState(null);
+  const saveReceipt=(row)=>{setReceipts(p=>[{...row,id:genId('R',p)},...p]);setModal(null)};
+  const rows=metrics.orderRows.filter(o=>o.type==='Job Work'||safeNum(o.issuedKG)>0);
+  const cols=[
+    {key:'id',label:'Order',render:o=><span className="num blue-t">{o.id}</span>},
+    {key:'vendor',label:'Vendor / SKU',render:o=><><b>{o.vendor}</b><br/><span className="tiny">{o.sku}</span></>},
+    {key:'issued',label:'Issued RM KG',render:o=><span className="num amber-t">{fN(o.issuedKG)} KG</span>},
+    {key:'receivedKg',label:'Received Goods KG',render:o=><span className="num green-t">{fN(o.receivedKG)} KG</span>},
+    {key:'receivedPcs',label:'Received Goods PCS',render:o=><span className="num green-t">{fN(o.receivedPCS)} PCS</span>},
+    {key:'wastage',label:'RM vs FG Difference',render:o=><><span className={`num ${o.wastagePct>5?'red-t':'green-t'}`}>{fN(o.wastageKG)} KG</span><br/><span className="tiny">{fP(o.wastagePct)} wastage</span></>},
+    {key:'expected',label:'Pending FG',render:o=><span className={`num ${o.pendingFG?'red-t':'green-t'}`}>{fN(o.pendingFG)} PCS</span>},
+    {key:'action',label:'Action',render:o=><Button variant="secondary" onClick={()=>setModal(o)}>+ Add Receipt</Button>},
+  ];
+  return <>
+    <PageHead title="Job Work: RM Issued vs FG Received" sub="Track raw material sent to vendor in KG, finished goods received in KG and PCS, and stock update">
+      <Badge color="purple">RM → FG Control</Badge>
+    </PageHead>
+    <div className="grid kpi-grid" style={{gridTemplateColumns:'repeat(4,minmax(180px,1fr))'}}>
+      <KPI label="Total RM Issued" value={`${fN(metrics.totals.rmIssued)} KG`} sub="Sent to job workers" icon="📤" color="amber"/>
+      <KPI label="FG Received KG" value={`${fN(metrics.totals.fgReceivedKG)} KG`} sub="Received from vendors" icon="📥" color="green"/>
+      <KPI label="FG Received PCS" value={fN(metrics.totals.fgReceivedPCS)} sub="Added to stock" icon="📦" color="blue"/>
+      <KPI label="RM Difference" value={`${fN(Math.max(0,metrics.totals.rmIssued-metrics.totals.fgReceivedKG))} KG`} sub="Check wastage/shortage" icon="⚖️" color="red"/>
+    </div>
+    <DataTable columns={cols} data={rows} searchText="Search job work order..." />
+    {modal&&<ReceiptForm order={modal} skus={skus} onSave={saveReceipt} onClose={()=>setModal(null)}/>} 
+  </>
+}
+
+function DispatchPage({skus,clients,setDispatches,metrics}){
+  const [modal,setModal]=useState(null);
+  const saveDispatch=(row)=>{setDispatches(p=>[{...row,id:genId('D',p)},...p]);setModal(null)};
+  const orderCols=[
+    {key:'id',label:'Order',render:o=><span className="num blue-t">{o.id}</span>},
+    {key:'client',label:'Client / SKU',render:o=><><b>{o.client}</b><br/><span className="tiny">{o.sku}</span></>},
+    {key:'demand',label:'Order Qty',render:o=><span className="num">{fN(o.orderQtyPCS)} PCS</span>},
+    {key:'done',label:'Dispatched Qty',render:o=><span className="num green-t">{fN(o.dispatchedPCS)} PCS</span>},
+    {key:'pending',label:'Pending Dispatch',render:o=><span className={`num ${o.pendingDispatch?'red-t':'green-t'}`}>{fN(o.pendingDispatch)} PCS</span>},
+    {key:'stock',label:'Stock Available',render:o=>{const s=metrics.skuRows.find(x=>x.name===o.sku);return <span className="num blue-t">{fN(s?.onHandPCS||0)} PCS</span>}},
+    {key:'clientDate',label:'Client Delivery',render:o=>o.clientDeliveryDate},
+    {key:'action',label:'Action',render:o=><Button variant="blue" onClick={()=>setModal(o)} disabled={o.pendingDispatch<=0}>Dispatch</Button>},
+  ];
+  const dispatchCols=[
+    {key:'id',label:'Dispatch',render:d=><span className="num blue-t">{d.id}</span>},
+    {key:'date',label:'Date'}, {key:'orderId',label:'Order'}, {key:'client',label:'Client'}, {key:'sku',label:'SKU'},
+    {key:'qty',label:'Qty',render:d=><>{fN(d.qtyPCS)} PCS<br/><span className="tiny">{fN(d.qtyKG)} KG</span></>},
+    {key:'sales',label:'Sales',render:d=><span className="num green-t">{fC(d.revenue)}</span>},
+    {key:'invoice',label:'Invoice'},
+  ];
+  return <>
+    <PageHead title="Dispatch Control" sub="Monitor dispatched quantity and pending dispatch order-wise">
+      <Button variant="primary" onClick={()=>setModal({})}>+ Direct Dispatch</Button>
+    </PageHead>
+    <Card title="Order-wise Dispatch Pending"><DataTable columns={orderCols} data={metrics.orderRows.filter(o=>o.status!=='Cancelled')} searchText="Search pending dispatch..." /></Card>
+    <div style={{height:16}}></div>
+    <Card title="Dispatch History"><DataTable columns={dispatchCols} data={metrics.dispatchPnL} searchText="Search dispatch history..." /></Card>
+    {modal&&<DispatchForm order={modal.id?modal:null} skus={skus} clients={clients} onSave={saveDispatch} onClose={()=>setModal(null)}/>} 
+  </>
+}
+
+function PnLPage({metrics}){
+  const cols=[
+    {key:'id',label:'Dispatch',render:r=><span className="num blue-t">{r.id}</span>}, {key:'date',label:'Date'}, {key:'orderId',label:'Order'},
+    {key:'sku',label:'SKU / Client',render:r=><><b>{r.sku}</b><br/><span className="tiny">{r.client}</span></>},
+    {key:'qty',label:'Qty',render:r=><>{fN(r.qtyPCS)} PCS<br/><span className="tiny">{fN(r.qtyKG)} KG</span></>},
+    {key:'sales',label:'Selling Value',render:r=><span className="num green-t">{fC(r.revenue)}</span>},
+    {key:'material',label:'Buying Cost',render:r=>fC(r.materialCost)},
+    {key:'mfg',label:'Mfg / Job Work',render:r=>fC(r.mfgCost)},
+    {key:'logistics',label:'Logistics',render:r=>fC(r.logistics)},
+    {key:'profit',label:'Profit / Loss',render:r=><><span className={`num ${r.profit>=0?'green-t':'red-t'}`}>{fC(r.profit)}</span><br/><span className="tiny">{fP(r.margin)} margin</span></>},
+  ];
+  return <>
+    <PageHead title="Profit & Loss" sub="P&L calculated from selling value minus buying cost, job-work/mfg cost and logistics">
+      <Button variant="secondary" onClick={()=>exportCSV(metrics.dispatchPnL,'profit_loss.csv')}>⬇ Export P&L</Button>
+    </PageHead>
+    <div className="grid kpi-grid" style={{gridTemplateColumns:'repeat(4,minmax(180px,1fr))'}}>
+      <KPI label="Total Sales" value={fC(metrics.totals.sales)} sub="Dispatch value" icon="💵" color="green"/>
+      <KPI label="Total Cost" value={fC(metrics.totals.cost)} sub="Buying + mfg + logistics" icon="🧾" color="amber"/>
+      <KPI label="Net Profit" value={fC(metrics.totals.profit)} sub={`${fP(metrics.totals.sales?metrics.totals.profit/metrics.totals.sales*100:0)} margin`} icon="📈" color={metrics.totals.profit>=0?'green':'red'}/>
+      <KPI label="Dispatches" value={metrics.dispatchPnL.length} sub="P&L lines" icon="🚚" color="blue"/>
+    </div>
+    <DataTable columns={cols} data={metrics.dispatchPnL} searchText="Search P&L..." />
+  </>
+}
+
+function CalendarPage({metrics}){
+  const parseISO=(iso)=>{const [y,m,d]=String(iso||todayISO()).split('-').map(Number);return new Date(y,(m||1)-1,d||1)};
+  const fmt=(d)=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const datePlus=(iso,days)=>{const d=parseISO(iso);d.setDate(d.getDate()+days);return fmt(d)};
+  const dayName=(iso)=>parseISO(iso).toLocaleDateString('en-IN',{weekday:'short'});
+  const pretty=(iso)=>parseISO(iso).toLocaleDateString('en-IN',{day:'2-digit',month:'short'});
+  const [startDate,setStartDate]=useState(todayISO());
+  const [endDate,setEndDate]=useState(addDays(14));
+  const [filter,setFilter]=useState('All');
+
+  const dateList=useMemo(()=>{
+    const start=parseISO(startDate); const selectedEnd=parseISO(endDate||startDate); const maxEnd=parseISO(datePlus(startDate,14));
+    const finalEnd=selectedEnd<start?start:(selectedEnd>maxEnd?maxEnd:selectedEnd);
+    const out=[]; const d=new Date(start);
+    while(d<=finalEnd){out.push(fmt(d));d.setDate(d.getDate()+1)}
+    return out;
+  },[startDate,endDate]);
+
+  const events=useMemo(()=>{
+    const list=[];
+    metrics.orderRows.filter(o=>!['Cancelled','Closed'].includes(o.status)).forEach(o=>{
+      const receiveQty=safeNum(o.pendingFG)||safeNum(o.expectedPCS)||safeNum(o.orderQtyPCS);
+      const dispatchQty=safeNum(o.pendingDispatch)||safeNum(o.orderQtyPCS);
+      if(o.vendorDeliveryDate&&receiveQty>0){
+        list.push({date:o.vendorDeliveryDate,kind:'receive',type:'Receive from Vendor',party:o.vendor,sku:o.sku,qty:receiveQty,sub:`${o.id} · ${o.vendor} · ${o.status}`,order:o});
+      }
+      if(o.clientDeliveryDate&&dispatchQty>0){
+        list.push({date:o.clientDeliveryDate,kind:'dispatch',type:'Dispatch to Client',party:o.client,sku:o.sku,qty:dispatchQty,sub:`${o.id} · ${o.client} · pending dispatch`,order:o});
+      }
+    });
+    return list;
+  },[metrics.orderRows]);
+
+  const visibleEvents=events.filter(e=>dateList.includes(e.date)&&(filter==='All'||e.type===filter)).sort((a,b)=>a.date.localeCompare(b.date)||a.kind.localeCompare(b.kind));
+  const receiveCount=visibleEvents.filter(e=>e.kind==='receive').length;
+  const dispatchCount=visibleEvents.filter(e=>e.kind==='dispatch').length;
+  const reset15=()=>{const t=todayISO();setStartDate(t);setEndDate(addDays(14));};
+
+  return <>
+    <PageHead title="15 Days Delivery Planning" sub="Blue = Receive from Vendor · Green = Dispatch to Client · format shown as QTY - SKU Name">
+      <input className="inp" style={{width:150}} type="date" value={startDate} onChange={e=>setStartDate(e.target.value)}/>
+      <input className="inp" style={{width:150}} type="date" value={endDate} min={startDate} max={datePlus(startDate,14)} onChange={e=>setEndDate(e.target.value)}/>
+      <select className="sel" style={{width:190}} value={filter} onChange={e=>setFilter(e.target.value)}><option>All</option><option>Receive from Vendor</option><option>Dispatch to Client</option></select>
+      <Button variant="secondary" onClick={reset15}>Today + 15 Days</Button>
+      <Button variant="secondary" onClick={()=>exportCSV(visibleEvents,'15_day_delivery_plan.csv')}>⬇ Export Plan</Button>
+    </PageHead>
+
+    <div className="grid kpi-grid" style={{gridTemplateColumns:'repeat(4,minmax(180px,1fr))'}}>
+      <KPI label="Planning Range" value={`${dateList.length} Days`} sub={`${pretty(dateList[0])} to ${pretty(dateList[dateList.length-1])}`} icon="🗓️" color="blue"/>
+      <KPI label="Receive from Vendor" value={receiveCount} sub={`${fN(visibleEvents.filter(e=>e.kind==='receive').reduce((a,e)=>a+safeNum(e.qty),0))} PCS`} icon="📥" color="blue"/>
+      <KPI label="Dispatch to Client" value={dispatchCount} sub={`${fN(visibleEvents.filter(e=>e.kind==='dispatch').reduce((a,e)=>a+safeNum(e.qty),0))} PCS`} icon="🚚" color="green"/>
+      <KPI label="Total Tasks" value={visibleEvents.length} sub="Shown within selected 15-day window" icon="✅" color="purple"/>
+    </div>
+
+    <Card title="15-Day Planning Board" action={<div className="legend"><span><i className="legend-dot blue"></i> Receive from Vendor</span><span><i className="legend-dot green"></i> Dispatch to Client</span></div>}>
+      <div className="plan-board">
+        <div className="plan-grid" style={{gridTemplateColumns:`repeat(${dateList.length}, minmax(185px, 1fr))`}}>
+          {dateList.map(date=>{
+            const dayEvents=visibleEvents.filter(e=>e.date===date);
+            return <div key={date} className="day plan-day">
+              <div className="dnum">{dayName(date)} · {pretty(date)}</div>
+              {dayEvents.length?dayEvents.map((e,i)=><span key={i} className={`chip ${e.kind}`} title={`${e.type} · ${e.party}`}>
+                {fN(e.qty)} PCS - {e.sku}
+                <small>{e.type}<br/>{e.party}</small>
+              </span>):<span className="tiny">No plan</span>}
+            </div>
+          })}
+        </div>
+      </div>
+    </Card>
+
+    <div style={{height:16}}></div>
+    <Card title="Planning List">
+      <div className="table-wrap"><table className="table" style={{minWidth:820}}><thead><tr><th>Date</th><th>Type</th><th>QTY - SKU Name</th><th>Vendor / Client</th><th>Order</th><th>Status</th></tr></thead><tbody>{visibleEvents.length?visibleEvents.map((e,i)=><tr key={i}><td><b>{pretty(e.date)}</b><br/><span className="tiny">{dayName(e.date)}</span></td><td><Badge color={e.kind==='receive'?'blue':'green'}>{e.type}</Badge></td><td><span className={e.kind==='receive'?'blue-t num':'green-t num'}>{fN(e.qty)} PCS - {e.sku}</span></td><td>{e.party}</td><td>{e.order.id}</td><td><StatusBadge status={e.order.status} pendingFG={e.order.pendingFG}/></td></tr>):<tr><td colSpan="6" className="center muted" style={{padding:36}}>No receive/dispatch plan in this selected range</td></tr>}</tbody></table></div>
+    </Card>
+  </>
+}
+
+
+function MastersPage({skus,setSkus,vendors,setVendors,clients,setClients}){
+  const [tab,setTab]=useState('skus');
+  const skuCols=[{key:'id',label:'ID'},{key:'name',label:'SKU'},{key:'client',label:'Client'},{key:'size',label:'Size'},{key:'ply',label:'Ply'},{key:'weight',label:'Weight',render:s=>`${s.stdWeight} KG`},{key:'sell',label:'Sell',render:s=>`₹${s.sellPCS}/PCS`}];
+  const vendorCols=[{key:'id',label:'ID'},{key:'name',label:'Vendor'},{key:'location',label:'Location'},{key:'rate',label:'Rate/KG',render:v=>fC(v.rate)},{key:'wastageAllowance',label:'Wastage %',render:v=>`${v.wastageAllowance}%`}];
+  const clientCols=[{key:'id',label:'ID'},{key:'name',label:'Client'},{key:'contact',label:'Contact'},{key:'mobile',label:'Mobile'},{key:'gst',label:'GST'},{key:'terms',label:'Terms'}];
+  return <>
+    <PageHead title="Masters" sub="SKU, vendor and client master data used across orders, stock and P&L"><div className="tabs"><button className={tab==='skus'?'active':''} onClick={()=>setTab('skus')}>SKU</button><button className={tab==='vendors'?'active':''} onClick={()=>setTab('vendors')}>Vendors</button><button className={tab==='clients'?'active':''} onClick={()=>setTab('clients')}>Clients</button></div></PageHead>
+    {tab==='skus'&&<DataTable columns={skuCols} data={skus} searchText="Search SKU..."/>}
+    {tab==='vendors'&&<DataTable columns={vendorCols} data={vendors} searchText="Search vendor..."/>}
+    {tab==='clients'&&<DataTable columns={clientCols} data={clients} searchText="Search client..."/>}
+  </>
+}
+
+function Sidebar({page,setPage}){
+  const items=[
+    ['dashboard','📊','Command Center'],['orders','🏭','Vendor Orders'],['inventory','📦','Inventory Control'],['jobwork','⚖️','RM vs FG Job Work'],['dispatch','🚚','Dispatch Control'],['pnl','💰','Profit & Loss'],['calendar','🗓️','Delivery Calendar'],['masters','⚙️','Masters']
+  ];
+  return <aside className="sidebar"><div className="brand"><div className="logo">📦</div><h1>BGSG-BLR</h1><p>Contract manufacturing + trading control</p></div><div className="nav">{items.map(([id,ico,label])=><button key={id} className={page===id?'active':''} onClick={()=>setPage(id)}><span className="ico">{ico}</span>{label}</button>)}</div><div className="sidebar-footer">BGSG-BLR</div></aside>
+}
+
+function App(){
+  const [page,setPage]=useState('dashboard');
+  const [clients,setClients,clientsSync]=useSupabaseState(CLOUD_TABLES.clients,'bp_clients_v4',START_CLIENTS);
+  const [vendors,setVendors,vendorsSync]=useSupabaseState(CLOUD_TABLES.vendors,'bp_vendors_v4',START_VENDORS);
+  const [skus,setSkus,skusSync]=useSupabaseState(CLOUD_TABLES.skus,'bp_skus_v4',START_SKUS);
+  const [orders,setOrders,ordersSync]=useSupabaseState(CLOUD_TABLES.orders,'bp_orders_v4',START_ORDERS);
+  const [receipts,setReceipts,receiptsSync]=useSupabaseState(CLOUD_TABLES.receipts,'bp_receipts_v4',START_RECEIPTS);
+  const [dispatches,setDispatches,dispatchesSync]=useSupabaseState(CLOUD_TABLES.dispatches,'bp_dispatches_v4',START_DISPATCHES);
+  const [rmOrders,setRmOrders,rmOrdersSync]=useSupabaseState(CLOUD_TABLES.rmOrders,'bp_rm_orders_v4',START_RM_ORDERS);
+  const metrics=useMemo(()=>makeMetrics(skus,orders,receipts,dispatches,rmOrders),[skus,orders,receipts,dispatches,rmOrders]);
+  const backup={clients,vendors,skus,orders,receipts,dispatches,rmOrders};
+  const syncs=[clientsSync,vendorsSync,skusSync,ordersSync,receiptsSync,dispatchesSync,rmOrdersSync];
+  const hasError=syncs.some(x=>String(x.status).toLowerCase().includes('error'));
+  const cloudText=!sb?'Local only':hasError?'Supabase sync issue':'Supabase cloud sync active';
+  return <div className="app"><Sidebar page={page} setPage={setPage}/><main className="main">
+    <div className="actions no-print" style={{justifyContent:'flex-end',marginBottom:12}}><span className={`badge ${hasError?'red':'green'}`}>{cloudText}</span><Button variant="secondary" onClick={()=>downloadBackup(backup)}>💾 Backup JSON</Button><Button variant="secondary" onClick={()=>window.print()}>🖨 Print</Button></div>
+    {page==='dashboard'&&<Dashboard metrics={metrics} setPage={setPage}/>} 
+    {page==='orders'&&<OrdersPage skus={skus} vendors={vendors} clients={clients} orders={orders} setOrders={setOrders} receipts={receipts} setReceipts={setReceipts} dispatches={dispatches} setDispatches={setDispatches} metrics={metrics}/>} 
+    {page==='inventory'&&<InventoryPage skus={skus} setSkus={setSkus} vendors={vendors} rmOrders={rmOrders} setRmOrders={setRmOrders} metrics={metrics}/>} 
+    {page==='jobwork'&&<JobWorkPage orders={orders} receipts={receipts} setReceipts={setReceipts} metrics={metrics} skus={skus}/>} 
+    {page==='dispatch'&&<DispatchPage skus={skus} clients={clients} setDispatches={setDispatches} metrics={metrics}/>} 
+    {page==='pnl'&&<PnLPage metrics={metrics}/>} 
+    {page==='calendar'&&<CalendarPage metrics={metrics}/>} 
+    {page==='masters'&&<MastersPage skus={skus} setSkus={setSkus} vendors={vendors} setVendors={setVendors} clients={clients} setClients={setClients}/>} 
+  </main></div>
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
