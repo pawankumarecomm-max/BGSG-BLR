@@ -37,10 +37,12 @@ input:focus,select:focus,textarea:focus{outline:2px solid rgba(5,150,105,.22);bo
 .table-wrap{overflow:auto;border:1px solid var(--border);border-radius:14px;background:#fff}.table{width:100%;border-collapse:separate;border-spacing:0;min-width:1050px}.table th{position:sticky;top:0;background:#f8fafc;color:#475569;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.45px;font-weight:800;padding:11px 13px;border-bottom:1px solid var(--border);z-index:1}.table td{padding:12px 13px;border-bottom:1px solid #eef2f7;font-size:13px;vertical-align:middle}.table tr:hover td{background:#fbfdff}.table tr:last-child td{border-bottom:0}.num{font-weight:800;font-family:'Sora',sans-serif}.green-t{color:var(--green)}.blue-t{color:var(--blue)}.amber-t{color:var(--amber)}.red-t{color:var(--red)}.right{text-align:right}.center{text-align:center}.nowrap{white-space:nowrap}.ellipsis{max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .badge{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:4px 9px;font-size:11px;font-weight:800;white-space:nowrap}.badge.green{background:var(--green2);color:#166534}.badge.blue{background:var(--blue2);color:#1e40af}.badge.amber{background:var(--amber2);color:#92400e}.badge.red{background:var(--red2);color:#991b1b}.badge.gray{background:#f1f5f9;color:#475569}.badge.purple{background:var(--purple2);color:#5b21b6}
 .progress{height:8px;background:#e2e8f0;border-radius:99px;overflow:hidden;margin-top:5px}.progress span{display:block;height:100%;border-radius:99px;background:var(--green);min-width:2px}.progress.red span{background:var(--red)}.progress.amber span{background:#f59e0b}.progress.blue span{background:var(--blue)}
-.split{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}.three{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.two{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px}.field label{display:block;font-size:12px;color:#475569;font-weight:700;margin-bottom:6px}.field.full{grid-column:1/-1}.calc-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;background:#f8fafc;border:1px solid var(--border);border-radius:13px;padding:13px;margin-top:13px}.calc-item{text-align:center}.calc-item label{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.3px}.calc-item strong{font-family:'Sora',sans-serif;font-size:15px;margin-top:3px;display:block}.modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.62);z-index:100;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:32px 16px}.modal{background:#fff;border-radius:18px;width:720px;max-width:96vw;box-shadow:0 30px 80px rgba(15,23,42,.35)}.modal.wide{width:980px}.modal-head{padding:17px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#fff;border-radius:18px 18px 0 0;z-index:2}.modal-head h3{font-family:'Sora',sans-serif;font-size:16px}.x{border:0;background:#f1f5f9;border-radius:9px;width:32px;height:32px}.modal-body{padding:20px 22px}.detail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.detail{background:#f8fafc;border:1px solid var(--border);border-radius:13px;padding:12px}.detail label{font-size:10px;color:var(--muted);font-weight:800;text-transform:uppercase}.detail strong{display:block;margin-top:6px;font-size:14px}.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}.day{min-height:116px;background:#fff;border:1px solid var(--border);border-radius:13px;padding:8px}.day .dnum{font-weight:800;color:#334155;font-size:12px;margin-bottom:6px}.chip{display:block;border-radius:9px;padding:7px 8px;font-size:11px;font-weight:800;margin-bottom:6px;line-height:1.25;overflow:hidden;text-overflow:ellipsis;border:1px solid transparent}.chip small{display:block;font-weight:700;opacity:.82;margin-top:3px}.chip.vendor,.chip.receive{background:#eff6ff;color:#1e40af;border-color:#bfdbfe}.chip.client,.chip.dispatch{background:#f0fdf4;color:#166534;border-color:#bbf7d0}.plan-board{overflow-x:auto;padding-bottom:6px}.plan-grid{display:grid;gap:10px}.plan-day{min-height:155px;min-width:185px}.legend{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--muted);font-weight:700}.legend-dot{width:12px;height:12px;border-radius:50%;display:inline-block}.legend-dot.green{background:var(--green)}.legend-dot.blue{background:var(--blue)}.tabs{display:flex;background:#f1f5f9;padding:4px;border-radius:11px;gap:4px}.tabs button{border:0;background:transparent;border-radius:8px;padding:7px 12px;font-weight:800;color:#475569}.tabs button.active{background:#fff;color:var(--green);box-shadow:0 1px 2px rgba(15,23,42,.1)}
+.split{display:grid;grid-template-columns:1.1fr .9fr;gap:16px}.three{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.two{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}.form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:13px}.field label{display:block;font-size:12px;color:#475569;font-weight:700;margin-bottom:6px}.field.full{grid-column:1/-1}.calc-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;background:#f8fafc;border:1px solid var(--border);border-radius:13px;padding:13px;margin-top:13px}.calc-item{text-align:center}.calc-item label{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.3px}.calc-item strong{font-family:'Sora',sans-serif;font-size:15px;margin-top:3px;display:block}.modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.62);z-index:100;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:32px 16px}.modal{background:#fff;border-radius:18px;width:720px;max-width:96vw;box-shadow:0 30px 80px rgba(15,23,42,.35)}.modal.wide{width:980px}.modal-head{padding:17px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#fff;border-radius:18px 18px 0 0;z-index:2}.modal-head h3{font-family:'Sora',sans-serif;font-size:16px}.x{border:0;background:#f1f5f9;border-radius:9px;width:32px;height:32px}.modal-body{padding:20px 22px}.detail-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.detail{background:#f8fafc;border:1px solid var(--border);border-radius:13px;padding:12px}.detail label{font-size:10px;color:var(--muted);font-weight:800;text-transform:uppercase}.detail strong{display:block;margin-top:6px;font-size:14px}.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}.day{min-height:116px;background:#fff;border:1px solid var(--border);border-radius:13px;padding:8px}.day .dnum{font-weight:800;color:#334155;font-size:12px;margin-bottom:6px}.chip{display:block;border-radius:9px;padding:7px 8px;font-size:11px;font-weight:800;margin-bottom:6px;line-height:1.25;overflow:hidden;text-overflow:ellipsis;border:1px solid transparent}.chip small{display:block;font-weight:700;opacity:.82;margin-top:3px}.chip.vendor,.chip.receive{background:#eff6ff;color:#1e40af;border-color:#bfdbfe}.chip.client,.chip.dispatch{background:#f0fdf4;color:#166534;border-color:#bbf7d0}.plan-board{overflow-x:auto;padding-bottom:6px}.plan-grid{display:grid;gap:10px}.plan-day{min-height:155px;min-width:185px}.calendar-agenda{display:flex;flex-direction:column;gap:6px}.agenda-row{display:grid;grid-template-columns:108px 1fr 1fr;gap:8px;align-items:stretch;background:#fff;border:1px solid var(--border);border-radius:11px;padding:7px}.agenda-date{background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:7px 8px;display:flex;flex-direction:column;justify-content:center;gap:1px}.agenda-date b{font-family:'Sora',sans-serif;font-size:14px;color:#0f172a}.agenda-date span{font-size:10px;color:var(--muted);font-weight:800}.agenda-date small{font-size:9px;color:#64748b;font-weight:700;white-space:nowrap}.agenda-lane{border-radius:10px;padding:6px 7px;min-height:45px}.agenda-lane.receive-lane{background:#eff6ff;border:1px solid #bfdbfe}.agenda-lane.dispatch-lane{background:#f0fdf4;border:1px solid #bbf7d0}.lane-head{display:flex;justify-content:space-between;align-items:center;font-size:9px;text-transform:uppercase;font-weight:900;letter-spacing:.2px;margin-bottom:4px}.receive-lane .lane-head{color:#1e40af}.dispatch-lane .lane-head{color:#166534}.agenda-chip{background:#fff;border-radius:8px;padding:5px 7px;margin-bottom:4px;border:1px solid rgba(15,23,42,.08);box-shadow:0 1px 2px rgba(15,23,42,.04)}.agenda-chip b{display:block;font-family:'Sora',sans-serif;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.agenda-chip.receive b{color:#1e40af}.agenda-chip.dispatch b{color:#166534}.agenda-chip span{display:block;font-size:9px;color:#64748b;font-weight:700;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.empty-lane{font-size:10px;color:#94a3b8;font-weight:800;padding:4px 2px}.legend{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:12px;color:var(--muted);font-weight:700}.legend-dot{width:12px;height:12px;border-radius:50%;display:inline-block}.legend-dot.green{background:var(--green)}.legend-dot.blue{background:var(--blue)}.tabs{display:flex;background:#f1f5f9;padding:4px;border-radius:11px;gap:4px}.tabs button{border:0;background:transparent;border-radius:8px;padding:7px 12px;font-weight:800;color:#475569}.tabs button.active{background:#fff;color:var(--green);box-shadow:0 1px 2px rgba(15,23,42,.1)}@media(max-width:1000px){.agenda-row{grid-template-columns:1fr}.agenda-date{flex-direction:row;justify-content:space-between;align-items:center}.agenda-lane{min-height:auto}}
 @media(max-width:1200px){.kpi-grid{grid-template-columns:repeat(3,1fr)}.split,.three{grid-template-columns:1fr}.main{padding:18px}.sidebar{width:220px}.main{margin-left:220px;width:calc(100% - 220px)}}
 @media(max-width:800px){.sidebar{position:relative;width:100%;height:auto}.app{display:block}.main{margin-left:0;width:100%}.kpi-grid,.two,.form-grid,.detail-grid{grid-template-columns:1fr}.page-head{display:block}.actions{margin-top:12px}.calendar-grid{grid-template-columns:1fr}.day{min-height:auto}}
 @media print{.sidebar,.actions,.toolbar,.btn,.no-print{display:none!important}.main{margin-left:0!important;width:100%!important;padding:12px!important}.card,.kpi{box-shadow:none}.table th{position:static}}
+
+.compact-kpi-grid{gap:8px!important;margin-bottom:10px!important}.compact-kpi-grid .kpi{padding:9px 11px;border-radius:11px}.compact-kpi-grid .kpi label{font-size:9px}.compact-kpi-grid .kpi strong{font-size:16px;margin-top:4px}.compact-kpi-grid .kpi small{font-size:10px;margin-top:2px}.compact-kpi-grid .kpi .icon{font-size:18px}.compact-card .card-head{padding:10px 12px}.compact-card .card-body{padding:10px 12px}
 </style>
 </head>
 <body>
@@ -53,7 +55,7 @@ const {useState,useMemo,useEffect} = React;
 const SUPABASE_URL='https://yjxbeteukpgxurnketgc.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlqeGJldGV1a3BneHVybmtldGdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNjY4MjQsImV4cCI6MjA5NDk0MjgyNH0.vk0YPRWuRXaBQiWJJEn0P9_D1Jxt_Ll8dQdASyfAijI';
 const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-const CLOUD_TABLES={clients:'clients',vendors:'vendors',skus:'skus',orders:'vendor_orders',receipts:'fg_receipts',dispatches:'dispatches',rmOrders:'mill_rm_orders'};
+const CLOUD_TABLES={clients:'clients',vendors:'vendors',skus:'skus',orders:'vendor_orders',receipts:'fg_receipts',dispatches:'dispatches',rmOrders:'mill_rm_orders',customerOrders:'customer_orders',customerSplits:'customer_order_splits',vendorSplits:'vendor_order_splits'};
 
 const C={green:'#059669',blue:'#1d4ed8',amber:'#b45309',red:'#dc2626',purple:'#7c3aed'};
 const fN=(n,d=0)=>Number(n||0).toLocaleString('en-IN',{minimumFractionDigits:d,maximumFractionDigits:d});
@@ -61,6 +63,7 @@ const fC=(n)=>`₹${fN(n,0)}`;
 const fP=(n)=>`${Number(n||0).toFixed(1)}%`;
 const todayISO=()=>new Date().toISOString().slice(0,10);
 const addDays=(days)=>{const d=new Date();d.setDate(d.getDate()+days);return d.toISOString().slice(0,10)};
+const dateMD=(month,day)=>`${new Date().getFullYear()}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
 const safeNum=(n)=>Number(n||0);
 
 const START_CLIENTS=[
@@ -99,20 +102,70 @@ const START_RM_ORDERS=[
   {id:'M002',date:todayISO(),mill:'South India Paper Mill',vendor:'Lakshmi Box Works',sku:'Shopper Stops Boxes',rmForBoxes:10000,rmKG:6186,buyKG:38,expectedDate:addDays(5),status:'Ordered',remarks:'Dedicated RM for Shopper Stops production'},
 ];
 
+const START_CUSTOMER_ORDERS=[
+  {id:'CO001',date:dateMD(5,21),client:'Yogabaar',sku:'Yogabaar Boxes',orderRef:'YB-MAY-25000',totalQtyPCS:25000,sellPCS:54.4,status:'Open',remarks:'Example: split dispatch plan for 25,000 boxes'},
+];
+const START_CUSTOMER_SPLITS=[
+  {id:'CS001',customerOrderId:'CO001',date:dateMD(5,22),qtyPCS:5000,status:'Pending',remarks:'Dispatch 1'},
+  {id:'CS002',customerOrderId:'CO001',date:dateMD(5,23),qtyPCS:5000,status:'Pending',remarks:'Dispatch 2'},
+  {id:'CS003',customerOrderId:'CO001',date:dateMD(5,25),qtyPCS:5000,status:'Pending',remarks:'Dispatch 3'},
+  {id:'CS004',customerOrderId:'CO001',date:dateMD(5,27),qtyPCS:5000,status:'Pending',remarks:'Dispatch 4'},
+  {id:'CS005',customerOrderId:'CO001',date:dateMD(5,29),qtyPCS:5000,status:'Pending',remarks:'Dispatch 5'},
+];
+const START_VENDOR_SPLITS=[
+  {id:'VS001',vendorOrderId:'O001',date:dateMD(5,23),qtyPCS:3000,status:'Planned',remarks:'Receive from Sri Durga'},
+  {id:'VS002',vendorOrderId:'O002',date:dateMD(5,26),qtyPCS:5000,status:'Planned',remarks:'Receive part 1'},
+  {id:'VS003',vendorOrderId:'O002',date:dateMD(5,28),qtyPCS:2000,status:'Planned',remarks:'Receive part 2'},
+];
+
+const DB_SCHEMA={
+  clients:{fields:['id','name','contact','mobile','email','gst','terms','billing','shipping','notes','status'], nums:[], dates:[]},
+  vendors:{fields:['id','name','contact','mobile','email','location','gst','rate','wastageAllowance','notes','status'], nums:['rate','wastageAllowance'], dates:[]},
+  skus:{fields:['id','name','client','size','ply','gsm','unit','stdWeight','openingStockPCS','dailyUse','sellPCS','sellKG','buyKG','mfgKG','logCost','idealWastage','notes','status'], nums:['stdWeight','openingStockPCS','dailyUse','sellPCS','sellKG','buyKG','mfgKG','logCost','idealWastage'], dates:[]},
+  vendor_orders:{fields:['id','date','type','vendor','client','sku','orderQtyPCS','issuedKG','buyKG','mfgKG','expectedPCS','vendorDeliveryDate','clientDeliveryDate','status','remarks'], nums:['orderQtyPCS','issuedKG','buyKG','mfgKG','expectedPCS'], dates:['date','vendorDeliveryDate','clientDeliveryDate']},
+  fg_receipts:{fields:['id','date','orderId','vendorSplitId','vendor','client','sku','receivedKG','receivedPCS','remarks'], nums:['receivedKG','receivedPCS'], dates:['date']},
+  dispatches:{fields:['id','date','orderId','customerOrderId','customerSplitId','client','sku','qtyPCS','qtyKG','sellPCS','sellKG','logistics','invoice','remarks'], nums:['qtyPCS','qtyKG','sellPCS','sellKG','logistics'], dates:['date']},
+  mill_rm_orders:{fields:['id','date','mill','vendor','sku','rmForBoxes','rmKG','buyKG','expectedDate','status','remarks'], nums:['rmForBoxes','rmKG','buyKG'], dates:['date','expectedDate']},
+  customer_orders:{fields:['id','date','client','sku','orderRef','totalQtyPCS','sellPCS','status','remarks'], nums:['totalQtyPCS','sellPCS'], dates:['date']},
+  customer_order_splits:{fields:['id','customerOrderId','date','qtyPCS','status','remarks'], nums:['qtyPCS'], dates:['date']},
+  vendor_order_splits:{fields:['id','vendorOrderId','date','qtyPCS','status','remarks'], nums:['qtyPCS'], dates:['date']}
+};
+function cleanRowsForSupabase(table,rows){
+  const cfg=DB_SCHEMA[table];
+  if(!cfg) return rows || [];
+  return (rows || []).filter(r=>r && r.id).map(r=>{
+    const out={};
+    cfg.fields.forEach(k=>{
+      let v=r[k];
+      if(cfg.nums.includes(k)){
+        out[k]=(v==='' || v===undefined || v===null) ? null : Number(v);
+      }else if(cfg.dates.includes(k)){
+        out[k]=(v==='' || v===undefined || v===null) ? null : String(v).slice(0,10);
+      }else{
+        out[k]=(v===undefined || v===null) ? '' : v;
+      }
+    });
+    return out;
+  });
+}
+function detailedSupabaseError(err){
+  if(!err) return 'Unknown Supabase error';
+  return [err.message, err.details, err.hint, err.code].filter(Boolean).join(' | ');
+}
 function useSupabaseState(table,key,initial){
-  const localKey=`bp_${table}_cloud_v1`;
+  const localKey=`bp_${table}_cloud_v2`;
   const [state,setState]=useState(()=>{
     try{const raw=localStorage.getItem(localKey);return raw?JSON.parse(raw):initial}catch(e){return initial}
   });
   const [loaded,setLoaded]=useState(false);
-  const [sync,setSync]=useState({status: sb?'Connecting':'Local only', error:''});
+  const [sync,setSync]=useState({table,status: sb?'Connecting':'Local only', error:''});
 
   useEffect(()=>{
     let alive=true;
     async function load(){
       if(!sb){ setLoaded(true); return; }
       try{
-        setSync({status:'Loading cloud',error:''});
+        setSync({table,status:'Loading cloud',error:''});
         const {data,error}=await sb.from(table).select('*').order('id',{ascending:true});
         if(error) throw error;
         if(!alive) return;
@@ -120,18 +173,18 @@ function useSupabaseState(table,key,initial){
           setState(data);
           localStorage.setItem(localKey,JSON.stringify(data));
         }else{
-          // Empty table: keep starter/local data and seed it once so the app opens with usable rows.
-          const seed=state && state.length ? state : initial;
+          const seed=cleanRowsForSupabase(table,(state && state.length ? state : initial));
           if(seed.length){
             const {error:seedErr}=await sb.from(table).upsert(seed,{onConflict:'id'});
             if(seedErr) throw seedErr;
           }
           setState(seed);
+          localStorage.setItem(localKey,JSON.stringify(seed));
         }
-        setSync({status:'Cloud synced',error:''});
+        setSync({table,status:'Cloud synced',error:''});
       }catch(err){
         console.error('Supabase load error for',table,err);
-        if(alive) setSync({status:'Cloud error',error:err.message||String(err)});
+        if(alive) setSync({table,status:'Cloud error',error:detailedSupabaseError(err)});
       }finally{ if(alive) setLoaded(true); }
     }
     load();
@@ -143,16 +196,17 @@ function useSupabaseState(table,key,initial){
     if(!sb || !loaded) return;
     const timer=setTimeout(async()=>{
       try{
-        if(state.length){
-          const {error}=await sb.from(table).upsert(state,{onConflict:'id'});
+        const cleaned=cleanRowsForSupabase(table,state);
+        if(cleaned.length){
+          const {error}=await sb.from(table).upsert(cleaned,{onConflict:'id'});
           if(error) throw error;
         }
-        setSync({status:'Cloud synced',error:''});
+        setSync({table,status:'Cloud synced',error:''});
       }catch(err){
         console.error('Supabase save error for',table,err);
-        setSync({status:'Save error',error:err.message||String(err)});
+        setSync({table,status:'Save error',error:detailedSupabaseError(err)});
       }
-    },450);
+    },650);
     return()=>clearTimeout(timer);
   },[table,state,loaded]);
 
@@ -161,6 +215,10 @@ function useSupabaseState(table,key,initial){
 function genId(prefix,arr){
   const nums=arr.map(x=>parseInt(String(x.id||'').replace(prefix,''),10)).filter(Boolean);
   return `${prefix}${String(nums.length?Math.max(...nums)+1:1).padStart(3,'0')}`;
+}
+function nextIdFactory(prefix,existing){
+  let max=(existing||[]).map(x=>parseInt(String(x.id||'').replace(prefix,''),10)).filter(Boolean).reduce((a,b)=>Math.max(a,b),0);
+  return ()=>`${prefix}${String(++max).padStart(3,'0')}`;
 }
 function exportCSV(data,filename){
   if(!data.length){alert('No rows to export');return}
@@ -193,11 +251,29 @@ function DataTable({columns,data,searchText='Search...',children}){
   </>
 }
 
-function makeMetrics(skus,orders,receipts,dispatches,rmOrders=[]){
+
+function makeMetrics(skus,orders,receipts,dispatches,rmOrders=[],customerOrders=[],customerSplits=[],vendorSplits=[]){
   const receiptByOrder={}; receipts.forEach(r=>{if(!receiptByOrder[r.orderId])receiptByOrder[r.orderId]={kg:0,pcs:0};receiptByOrder[r.orderId].kg+=safeNum(r.receivedKG);receiptByOrder[r.orderId].pcs+=safeNum(r.receivedPCS)});
   const dispatchByOrder={}; dispatches.forEach(d=>{if(d.orderId){if(!dispatchByOrder[d.orderId])dispatchByOrder[d.orderId]={kg:0,pcs:0};dispatchByOrder[d.orderId].kg+=safeNum(d.qtyKG);dispatchByOrder[d.orderId].pcs+=safeNum(d.qtyPCS)}});
   const receiptBySku={}; receipts.forEach(r=>{if(!receiptBySku[r.sku])receiptBySku[r.sku]={kg:0,pcs:0};receiptBySku[r.sku].kg+=safeNum(r.receivedKG);receiptBySku[r.sku].pcs+=safeNum(r.receivedPCS)});
   const dispatchBySku={}; dispatches.forEach(d=>{if(!dispatchBySku[d.sku])dispatchBySku[d.sku]={kg:0,pcs:0};dispatchBySku[d.sku].kg+=safeNum(d.qtyKG);dispatchBySku[d.sku].pcs+=safeNum(d.qtyPCS)});
+  const receiptByVendorSplit={}; receipts.forEach(r=>{if(r.vendorSplitId){if(!receiptByVendorSplit[r.vendorSplitId])receiptByVendorSplit[r.vendorSplitId]={kg:0,pcs:0};receiptByVendorSplit[r.vendorSplitId].kg+=safeNum(r.receivedKG);receiptByVendorSplit[r.vendorSplitId].pcs+=safeNum(r.receivedPCS)}});
+  const dispatchByCustomerOrder={}; const dispatchByCustomerSplit={};
+  dispatches.forEach(d=>{
+    if(d.customerOrderId){if(!dispatchByCustomerOrder[d.customerOrderId])dispatchByCustomerOrder[d.customerOrderId]={kg:0,pcs:0};dispatchByCustomerOrder[d.customerOrderId].kg+=safeNum(d.qtyKG);dispatchByCustomerOrder[d.customerOrderId].pcs+=safeNum(d.qtyPCS)}
+    if(d.customerSplitId){if(!dispatchByCustomerSplit[d.customerSplitId])dispatchByCustomerSplit[d.customerSplitId]={kg:0,pcs:0};dispatchByCustomerSplit[d.customerSplitId].kg+=safeNum(d.qtyKG);dispatchByCustomerSplit[d.customerSplitId].pcs+=safeNum(d.qtyPCS)}
+  });
+  const vendorSplitRows=vendorSplits.map(vs=>{const o=orders.find(x=>x.id===vs.vendorOrderId)||{}; const rec=receiptByVendorSplit[vs.id]||{kg:0,pcs:0}; const pending=Math.max(0,safeNum(vs.qtyPCS)-rec.pcs); return {...vs,order:o,vendor:o.vendor,client:o.client,sku:o.sku,receivedPCS:rec.pcs,receivedKG:rec.kg,pendingPCS:pending};});
+  const customerSplitRows=customerSplits.map(sp=>{const co=customerOrders.find(x=>x.id===sp.customerOrderId)||{}; const d=dispatchByCustomerSplit[sp.id]||{kg:0,pcs:0}; const pending=Math.max(0,safeNum(sp.qtyPCS)-d.pcs); return {...sp,order:co,client:co.client,sku:co.sku,orderRef:co.orderRef,dispatchedPCS:d.pcs,dispatchedKG:d.kg,pendingPCS:pending};});
+  const customerOrderRows=customerOrders.map(co=>{
+    const splits=customerSplitRows.filter(s=>s.customerOrderId===co.id && s.status!=='Cancelled');
+    const splitQty=splits.reduce((a,s)=>a+safeNum(s.qtyPCS),0);
+    const totalQty=splitQty || safeNum(co.totalQtyPCS);
+    const d=dispatchByCustomerOrder[co.id]||{kg:0,pcs:0};
+    const pendingDispatch=Math.max(0,totalQty-d.pcs);
+    const progress=totalQty?d.pcs/totalQty*100:0;
+    return {...co,totalQtyPCS:totalQty,splitQty,splitCount:splits.length,dispatchedPCS:d.pcs,dispatchedKG:d.kg,pendingDispatch,progress,splits};
+  });
   const rmBySku={}; const rmByVendor={};
   rmOrders.forEach(r=>{
     if(r.status==='Cancelled')return;
@@ -209,17 +285,19 @@ function makeMetrics(skus,orders,receipts,dispatches,rmOrders=[]){
     rmByVendor[r.vendor].boxes+=boxes; rmByVendor[r.vendor].kg+=kg; rmByVendor[r.vendor].lines.push(r);
   });
   const orderRows=orders.map(o=>{
-    const r=receiptByOrder[o.id]||{kg:0,pcs:0}; const d=dispatchByOrder[o.id]||{kg:0,pcs:0};
+    const r=receiptByOrder[o.id]||{kg:0,pcs:0}; const d=dispatchByOrder[o.id]||{kg:0,pcs:0}; const splits=vendorSplitRows.filter(v=>v.vendorOrderId===o.id && v.status!=='Cancelled');
     const pendingFG=Math.max(0,safeNum(o.orderQtyPCS)-r.pcs); const pendingDispatch=Math.max(0,safeNum(o.orderQtyPCS)-d.pcs);
     const progress=safeNum(o.orderQtyPCS)?r.pcs/safeNum(o.orderQtyPCS)*100:0;
     const wastageKG=Math.max(0,safeNum(o.issuedKG)-r.kg); const wastagePct=safeNum(o.issuedKG)?wastageKG/safeNum(o.issuedKG)*100:0;
-    return {...o,receivedKG:r.kg,receivedPCS:r.pcs,dispatchedKG:d.kg,dispatchedPCS:d.pcs,pendingFG,pendingDispatch,progress,wastageKG,wastagePct};
+    return {...o,receivedKG:r.kg,receivedPCS:r.pcs,dispatchedKG:d.kg,dispatchedPCS:d.pcs,pendingFG,pendingDispatch,progress,wastageKG,wastagePct,splits,splitCount:splits.length};
   });
+  const hasCustomerPlan=customerOrderRows.some(co=>co.status!=='Cancelled');
+  const customerDemandBySku={}; customerOrderRows.filter(co=>co.status!=='Cancelled').forEach(co=>{customerDemandBySku[co.sku]=(customerDemandBySku[co.sku]||0)+safeNum(co.totalQtyPCS)});
   const skuRows=skus.map(s=>{
     const rec=receiptBySku[s.name]||{kg:0,pcs:0}; const disp=dispatchBySku[s.name]||{kg:0,pcs:0};
     const onHandPCS=Math.max(0,safeNum(s.openingStockPCS)+rec.pcs-disp.pcs);
     const placedPCS=orderRows.filter(o=>o.sku===s.name && !['Closed','Cancelled'].includes(o.status)).reduce((a,o)=>a+o.pendingFG,0);
-    const clientDemandPCS=orderRows.filter(o=>o.sku===s.name && !['Cancelled'].includes(o.status)).reduce((a,o)=>a+safeNum(o.orderQtyPCS),0);
+    const clientDemandPCS=hasCustomerPlan ? safeNum(customerDemandBySku[s.name]) : orderRows.filter(o=>o.sku===s.name && !['Cancelled'].includes(o.status)).reduce((a,o)=>a+safeNum(o.orderQtyPCS),0);
     const dispatchedPCS=dispatches.filter(d=>d.sku===s.name).reduce((a,d)=>a+safeNum(d.qtyPCS),0);
     const pendingDispatchPCS=Math.max(0,clientDemandPCS-dispatchedPCS);
     const rm=rmBySku[s.name]||{boxes:0,kg:0,pendingBoxes:0,pendingKG:0,receivedBoxes:0,receivedKG:0,lines:[]};
@@ -249,12 +327,11 @@ function makeMetrics(skus,orders,receipts,dispatches,rmOrders=[]){
     daily:skuRows.reduce((a,s)=>a+safeNum(s.dailyUse),0), pendingDispatch:skuRows.reduce((a,s)=>a+s.pendingDispatchPCS,0), dispatched:dispatches.reduce((a,d)=>a+safeNum(d.qtyPCS),0),
     rmIssued:orders.reduce((a,o)=>a+safeNum(o.issuedKG),0), fgReceivedKG:receipts.reduce((a,r)=>a+safeNum(r.receivedKG),0), fgReceivedPCS:receipts.reduce((a,r)=>a+safeNum(r.receivedPCS),0),
     sales:dispatchPnL.reduce((a,r)=>a+r.revenue,0), cost:dispatchPnL.reduce((a,r)=>a+r.totalCost,0), profit:dispatchPnL.reduce((a,r)=>a+r.profit,0),
-    rmOrderedBoxes:rmOrders.filter(r=>r.status!=='Cancelled').reduce((a,r)=>a+safeNum(r.rmForBoxes),0),
-    rmPendingBoxes:rmOrders.filter(r=>r.status!=='Cancelled'&&r.status!=='Received').reduce((a,r)=>a+safeNum(r.rmForBoxes),0),
-    rmReceivedBoxes:rmOrders.filter(r=>r.status==='Received').reduce((a,r)=>a+safeNum(r.rmForBoxes),0),
-    rmOrderedKG:rmOrders.filter(r=>r.status!=='Cancelled').reduce((a,r)=>a+safeNum(r.rmKG),0),
+    rmOrderedBoxes:rmOrders.filter(r=>r.status!=='Cancelled').reduce((a,r)=>a+safeNum(r.rmForBoxes),0), rmPendingBoxes:rmOrders.filter(r=>r.status!=='Cancelled'&&r.status!=='Received').reduce((a,r)=>a+safeNum(r.rmForBoxes),0), rmReceivedBoxes:rmOrders.filter(r=>r.status==='Received').reduce((a,r)=>a+safeNum(r.rmForBoxes),0), rmOrderedKG:rmOrders.filter(r=>r.status!=='Cancelled').reduce((a,r)=>a+safeNum(r.rmKG),0),
+    customerOrderQty:customerOrderRows.filter(c=>c.status!=='Cancelled').reduce((a,c)=>a+safeNum(c.totalQtyPCS),0), customerPending:customerOrderRows.filter(c=>c.status!=='Cancelled').reduce((a,c)=>a+safeNum(c.pendingDispatch),0), customerSplits:customerSplitRows.filter(c=>c.status!=='Cancelled').length,
+    vendorSplitQty:vendorSplitRows.filter(v=>v.status!=='Cancelled').reduce((a,v)=>a+safeNum(v.qtyPCS),0),
   };
-  return {receiptByOrder,dispatchByOrder,rmBySku,rmByVendor,orderRows,skuRows,dispatchPnL,totals};
+  return {receiptByOrder,dispatchByOrder,rmBySku,rmByVendor,orderRows,skuRows,dispatchPnL,totals,customerOrderRows,customerSplitRows,vendorSplitRows};
 }
 
 function Dashboard({metrics,setPage}){
@@ -264,13 +341,14 @@ function Dashboard({metrics,setPage}){
   const active=orderRows.filter(o=>!['Closed','Cancelled'].includes(o.status));
   return <>
     <PageHead title="Operations Control Center" sub="One screen for vendor orders, stock, dispatch pending, RM vs FG and profit/loss">
-      <Button variant="secondary" onClick={()=>setPage('orders')}>Manage Vendor Orders</Button>
+      <Button variant="secondary" onClick={()=>setPage('customerOrders')}>Customer Orders</Button>
+      <Button variant="secondary" onClick={()=>setPage('orders')}>Vendor Orders</Button>
       <Button variant="primary" onClick={()=>setPage('dispatch')}>Dispatch Control</Button>
     </PageHead>
     <div className="grid kpi-grid">
       <KPI label="Stock in Hand" value={fN(totals.onHand)} sub="Finished goods available" icon="📦" color="green"/>
       <KPI label="Placed to Make" value={fN(totals.placed)} sub={`Balance with vendors · RM from mills ${fN(totals.rmPendingBoxes||0)}`} icon="🏭" color="amber"/>
-      <KPI label="Pending Dispatch" value={fN(totals.pendingDispatch)} sub="Client order balance" icon="🚚" color="red"/>
+      <KPI label="Pending Dispatch" value={fN(totals.pendingDispatch)} sub={`Customer orders ${fN(totals.customerOrderQty||0)}`} icon="🚚" color="red"/>
       <KPI label="Dispatched Qty" value={fN(totals.dispatched)} sub="PCS dispatched" icon="✅" color="blue"/>
       <KPI label="Net Profit" value={fC(totals.profit)} sub={`Sales ${fC(totals.sales)} · Cost ${fC(totals.cost)}`} icon="💰" color={totals.profit>=0?'green':'red'}/>
       <KPI label="RM vs FG" value={`${fN(totals.rmIssued)} KG`} sub={`Received ${fN(totals.fgReceivedKG)} KG / ${fN(totals.fgReceivedPCS)} PCS`} icon="⚖️" color="purple"/>
@@ -292,9 +370,31 @@ function Dashboard({metrics,setPage}){
 function AlertLine({title,value,sub,color}){return <div className={`kpi ${color}`} style={{padding:13}}><label>{title}</label><strong style={{fontSize:22}}>{value}</strong><small>{sub}</small></div>}
 function StatusBadge({status,pendingFG}){let color='gray'; if(status==='Closed')color='green'; else if(status==='Ready to Dispatch')color='blue'; else if(status==='In Production')color='amber'; else if(status==='Delayed')color='red'; if(pendingFG===0 && status!=='Cancelled') color='green'; return <Badge color={color}>{pendingFG===0 && status!=='Cancelled'?'FG Complete':status}</Badge>}
 
-function OrderForm({skus,vendors,clients,initial,onSave,onClose}){
+
+function SplitScheduleEditor({title,splits,setSplits,dateLabel='Date',qtyLabel='Qty PCS',statusOptions=['Pending','Done','Cancelled']}){
+  const update=(i,k,v)=>setSplits(prev=>prev.map((r,idx)=>idx===i?{...r,[k]:v}:r));
+  const add=()=>setSplits(prev=>[...prev,{date:todayISO(),qtyPCS:'',status:statusOptions[0],remarks:''}]);
+  const remove=(i)=>setSplits(prev=>prev.filter((_,idx)=>idx!==i));
+  const total=splits.reduce((a,r)=>a+safeNum(r.qtyPCS),0);
+  return <div className="card" style={{gridColumn:'1/-1',boxShadow:'none'}}>
+    <div className="card-head"><div className="card-title">{title}</div><div className="actions"><Badge color="blue">Total {fN(total)} PCS</Badge><Button variant="secondary" onClick={add}>+ Add Split</Button></div></div>
+    <div className="card-body" style={{padding:10}}>
+      {splits.length===0&&<div className="muted" style={{padding:10}}>No split rows yet. Add date-wise quantities.</div>}
+      {splits.map((r,i)=><div key={r.id||i} className="form-grid" style={{gridTemplateColumns:'1fr 1fr 1fr 1.4fr auto',gap:8,marginBottom:8,alignItems:'end'}}>
+        <Field label={dateLabel}><Input type="date" value={r.date} onChange={v=>update(i,'date',v)}/></Field>
+        <Field label={qtyLabel}><Input type="number" value={r.qtyPCS} onChange={v=>update(i,'qtyPCS',v)}/></Field>
+        <Field label="Status"><Select value={r.status} onChange={v=>update(i,'status',v)} options={statusOptions}/></Field>
+        <Field label="Remarks"><Input value={r.remarks} onChange={v=>update(i,'remarks',v)} placeholder="Optional"/></Field>
+        <Button variant="danger" onClick={()=>remove(i)}>Del</Button>
+      </div>)}
+    </div>
+  </div>
+}
+
+function OrderForm({skus,vendors,clients,initial,initialSplits=[],onSave,onClose}){
   const blank={date:todayISO(),type:'Job Work',vendor:'',client:'',sku:'',orderQtyPCS:'',issuedKG:'',buyKG:'',mfgKG:'',expectedPCS:'',vendorDeliveryDate:addDays(5),clientDeliveryDate:addDays(7),status:'In Production',remarks:''};
   const [f,setF]=useState(initial||blank);
+  const [splits,setSplits]=useState(initialSplits && initialSplits.length ? initialSplits.map(x=>({...x})) : []);
   const set=(k,v)=>setF(p=>{
     const u={...p,[k]:v};
     if(k==='sku'){
@@ -303,13 +403,21 @@ function OrderForm({skus,vendors,clients,initial,onSave,onClose}){
     const s=skus.find(x=>x.name===u.sku);
     if((k==='orderQtyPCS'||k==='sku') && s && safeNum(u.orderQtyPCS)>0){
       const ideal=safeNum(s.idealWastage)/100; u.issuedKG=Math.round(safeNum(u.orderQtyPCS)*safeNum(s.stdWeight)/(1-ideal)); u.expectedPCS=u.orderQtyPCS;
+      if(!initial && splits.length===0){setSplits([{date:u.vendorDeliveryDate||addDays(5),qtyPCS:u.orderQtyPCS,status:'Planned',remarks:'Vendor delivery split'}]);}
     }
     return u;
   });
+  const addEvenSplits=()=>{
+    const total=safeNum(f.orderQtyPCS); if(!total){alert('Enter order quantity first');return;}
+    const count=Number(prompt('How many vendor delivery parts?', '5')||0); if(!count)return;
+    const each=Math.floor(total/count); const rem=total-(each*count);
+    setSplits(Array.from({length:count},(_,i)=>({date:addDays(2+i*2),qtyPCS:each+(i===count-1?rem:0),status:'Planned',remarks:`Part ${i+1}`})));
+  };
   const sku=skus.find(s=>s.name===f.sku)||{};
   const expectedKG=safeNum(f.orderQtyPCS)*safeNum(sku.stdWeight);
   const rmCost=safeNum(f.issuedKG)*safeNum(f.buyKG);
   const mfgCost=expectedKG*safeNum(f.mfgKG);
+  const splitQty=splits.reduce((a,r)=>a+safeNum(r.qtyPCS),0);
   return <Modal title={initial?'Edit Vendor Order':'New Vendor / Job Work Order'} onClose={onClose} wide>
     <div className="form-grid">
       <Field label="Order Date"><Input type="date" value={f.date} onChange={v=>set('date',v)}/></Field>
@@ -317,18 +425,20 @@ function OrderForm({skus,vendors,clients,initial,onSave,onClose}){
       <Field label="Vendor"><Select value={f.vendor} onChange={v=>set('vendor',v)} options={vendors.map(v=>v.name)}/></Field>
       <Field label="Client"><Select value={f.client} onChange={v=>set('client',v)} options={clients.map(c=>c.name)}/></Field>
       <Field label="SKU"><Select value={f.sku} onChange={v=>set('sku',v)} options={skus.map(s=>s.name)}/></Field>
-      <Field label="Order Qty / Client Requirement (PCS)"><Input type="number" value={f.orderQtyPCS} onChange={v=>set('orderQtyPCS',v)}/></Field>
+      <Field label="Vendor Order Qty / Placed to Make (PCS)"><Input type="number" value={f.orderQtyPCS} onChange={v=>set('orderQtyPCS',v)}/></Field>
       <Field label="Issued RM to Vendor (KG)"><Input type="number" value={f.issuedKG} onChange={v=>set('issuedKG',v)}/></Field>
       <Field label="Expected FG PCS"><Input type="number" value={f.expectedPCS} onChange={v=>set('expectedPCS',v)}/></Field>
       <Field label="Buying Cost / KG"><Input type="number" value={f.buyKG} onChange={v=>set('buyKG',v)}/></Field>
       <Field label="Job Work / Mfg Cost / KG"><Input type="number" value={f.mfgKG} onChange={v=>set('mfgKG',v)}/></Field>
-      <Field label="Vendor Delivery Date"><Input type="date" value={f.vendorDeliveryDate} onChange={v=>set('vendorDeliveryDate',v)}/></Field>
-      <Field label="Client Delivery Date"><Input type="date" value={f.clientDeliveryDate} onChange={v=>set('clientDeliveryDate',v)}/></Field>
+      <Field label="Main Vendor Delivery Date"><Input type="date" value={f.vendorDeliveryDate} onChange={v=>set('vendorDeliveryDate',v)}/></Field>
+      <Field label="Client Delivery Date / Reference"><Input type="date" value={f.clientDeliveryDate} onChange={v=>set('clientDeliveryDate',v)}/></Field>
       <Field label="Status"><Select value={f.status} onChange={v=>set('status',v)} options={['In Production','Ready to Dispatch','Part Dispatched','Closed','Delayed','Cancelled']}/></Field>
       <Field label="Remarks"><Input value={f.remarks} onChange={v=>set('remarks',v)}/></Field>
+      <div style={{gridColumn:'1/-1'}}><Button variant="secondary" onClick={addEvenSplits}>⚡ Auto split vendor order equally</Button> <span className="tiny">Example: 25,000 boxes can be split into 5 delivery parts.</span></div>
+      <SplitScheduleEditor title="Vendor Delivery Split Plan" splits={splits} setSplits={setSplits} dateLabel="Vendor Receive Date" qtyLabel="Receive Qty PCS" statusOptions={['Planned','Received','Delayed','Cancelled']}/>
     </div>
-    <div className="calc-strip"><div className="calc-item"><label>Auto RM Cost</label><strong>{fC(rmCost)}</strong></div><div className="calc-item"><label>Expected FG KG</label><strong>{fN(expectedKG)} KG</strong></div><div className="calc-item"><label>Mfg Cost</label><strong>{fC(mfgCost)}</strong></div><div className="calc-item"><label>Total Cost Before Dispatch</label><strong>{fC(rmCost+mfgCost)}</strong></div></div>
-    <div className="actions" style={{justifyContent:'flex-end',marginTop:18}}><Button variant="secondary" onClick={onClose}>Cancel</Button><Button onClick={()=>onSave(f)}>{initial?'Update Order':'Save Order'}</Button></div>
+    <div className="calc-strip"><div className="calc-item"><label>Auto RM Cost</label><strong>{fC(rmCost)}</strong></div><div className="calc-item"><label>Expected FG KG</label><strong>{fN(expectedKG)} KG</strong></div><div className="calc-item"><label>Split Planned</label><strong className={splitQty!==safeNum(f.orderQtyPCS)?'red-t':'green-t'}>{fN(splitQty)} PCS</strong></div><div className="calc-item"><label>Total Cost Before Dispatch</label><strong>{fC(rmCost+mfgCost)}</strong></div></div>
+    <div className="actions" style={{justifyContent:'flex-end',marginTop:18}}><Button variant="secondary" onClick={onClose}>Cancel</Button><Button onClick={()=>onSave({order:f,splits})}>{initial?'Update Order':'Save Order'}</Button></div>
   </Modal>
 }
 
@@ -353,13 +463,16 @@ function ReceiptForm({order,skus,initial,onSave,onClose}){
 
 function DispatchForm({order,skus,clients,initial,onSave,onClose}){
   const sku=skus.find(s=>s.name===(order?.sku||initial?.sku))||{};
-  const [f,setF]=useState(initial||{date:todayISO(),orderId:order?.id||'',client:order?.client||sku.client||'',sku:order?.sku||'',qtyPCS:'',qtyKG:'',sellPCS:sku.sellPCS||'',sellKG:sku.sellKG||'',logistics:'',invoice:'',remarks:''});
+  const base=initial||{date:order?.date||todayISO(),orderId:String(order?.id||'').startsWith('O')?order.id:'',customerOrderId:order?.customerOrderId||'',customerSplitId:order?.customerSplitId||'',client:order?.client||sku.client||'',sku:order?.sku||'',qtyPCS:order?.qtyPCS||'',qtyKG:'',sellPCS:sku.sellPCS||order?.sellPCS||'',sellKG:sku.sellKG||'',logistics:'',invoice:'',remarks:order?.remarks||''};
+  const [f,setF]=useState(base);
   const set=(k,v)=>setF(p=>{const u={...p,[k]:v}; if(k==='sku'){const s=skus.find(x=>x.name===v); if(s){u.client=s.client;u.sellPCS=s.sellPCS;u.sellKG=s.sellKG}} if(k==='qtyPCS'){const s=skus.find(x=>x.name===u.sku); if(s)u.qtyKG=(safeNum(v)*safeNum(s.stdWeight)).toFixed(0)} return u});
   const revenue=safeNum(f.qtyPCS)?safeNum(f.qtyPCS)*safeNum(f.sellPCS):safeNum(f.qtyKG)*safeNum(f.sellKG);
   return <Modal title="Record Dispatch" onClose={onClose}>
     <div className="form-grid">
       <Field label="Dispatch Date"><Input type="date" value={f.date} onChange={v=>set('date',v)}/></Field>
-      <Field label="Against Order ID"><Input value={f.orderId} onChange={v=>set('orderId',v)} readOnly={!!order}/></Field>
+      <Field label="Vendor Order ID"><Input value={f.orderId} onChange={v=>set('orderId',v)} readOnly={!!order?.id&&String(order.id).startsWith('O')}/></Field>
+      <Field label="Customer Order ID"><Input value={f.customerOrderId} onChange={v=>set('customerOrderId',v)} readOnly={!!f.customerOrderId}/></Field>
+      <Field label="Customer Split ID"><Input value={f.customerSplitId} onChange={v=>set('customerSplitId',v)} readOnly={!!f.customerSplitId}/></Field>
       <Field label="Client"><Select value={f.client} onChange={v=>set('client',v)} options={clients.map(c=>c.name)}/></Field>
       <Field label="SKU"><Select value={f.sku} onChange={v=>set('sku',v)} options={skus.map(s=>s.name)}/></Field>
       <Field label="Dispatched Qty PCS"><Input type="number" value={f.qtyPCS} onChange={v=>set('qtyPCS',v)}/></Field>
@@ -375,29 +488,41 @@ function DispatchForm({order,skus,clients,initial,onSave,onClose}){
   </Modal>
 }
 
-function OrdersPage({skus,vendors,clients,orders,setOrders,receipts,setReceipts,dispatches,setDispatches,metrics}){
+
+function OrdersPage({skus,vendors,clients,orders,setOrders,receipts,setReceipts,dispatches,setDispatches,vendorSplits,setVendorSplits,metrics}){
   const [modal,setModal]=useState(null); const [selected,setSelected]=useState(null);
-  const saveOrder=(row)=>{ if(row.id){setOrders(p=>p.map(o=>o.id===row.id?row:o))} else {setOrders(p=>[{...row,id:genId('O',p)},...p])} setModal(null)};
+  const saveOrder=async(payload)=>{
+    const row=payload.order||payload; const splitRows=payload.splits||[];
+    const orderId=row.id || genId('O',orders);
+    const finalOrder={...row,id:orderId};
+    if(row.id){setOrders(p=>p.map(o=>o.id===row.id?finalOrder:o))} else {setOrders(p=>[{...finalOrder},...p])}
+    const nextVS=nextIdFactory('VS',vendorSplits);
+    const cleanedSplits=splitRows.filter(x=>safeNum(x.qtyPCS)>0 || x.date).map(x=>({...x,id:x.id||nextVS(),vendorOrderId:orderId,status:x.status||'Planned'}));
+    if(sb && row.id){try{await sb.from(CLOUD_TABLES.vendorSplits).delete().eq('vendorOrderId',row.id)}catch(e){console.error(e)}}
+    setVendorSplits(p=>[...p.filter(x=>x.vendorOrderId!==orderId),...cleanedSplits]);
+    setModal(null)
+  };
   const saveReceipt=(row)=>{setReceipts(p=>[{...row,id:genId('R',p)},...p]);setModal(null)};
   const saveDispatch=(row)=>{setDispatches(p=>[{...row,id:genId('D',p)},...p]);setModal(null)};
   const cols=[
     {key:'id',label:'Order',render:o=><button className="btn ghost" onClick={()=>setSelected(o)}><span className="blue-t num">{o.id}</span></button>},
     {key:'vendor',label:'Vendor / Client',render:o=><><b>{o.vendor}</b><br/><span className="tiny">Client: {o.client}</span></>},
     {key:'sku',label:'SKU',render:o=><><b>{o.sku}</b><br/><span className="tiny">{o.type}</span></>},
-    {key:'orderQtyPCS',label:'Order Qty',render:o=><span className="num">{fN(o.orderQtyPCS)} PCS</span>},
+    {key:'orderQtyPCS',label:'Placed to Make',render:o=><span className="num">{fN(o.orderQtyPCS)} PCS</span>},
+    {key:'splitPlan',label:'Vendor Split Plan',render:o=><div style={{minWidth:230}}>{o.splits?.length?o.splits.map(sp=><span key={sp.id} className="badge blue" style={{margin:'0 5px 5px 0'}}>{sp.date}: {fN(sp.qtyPCS)}</span>):<span className="tiny">No split plan</span>}</div>},
     {key:'receivedPCS',label:'FG Received',render:o=><><span className="num green-t">{fN(o.receivedPCS)} PCS</span><br/><span className="tiny">{fN(o.receivedKG)} KG received</span></>},
     {key:'pendingFG',label:'Pending at Vendor',render:o=><><span className={`num ${o.pendingFG?'amber-t':'green-t'}`}>{fN(o.pendingFG)} PCS</span><Progress pct={o.progress} color={o.progress<40?'red':o.progress<80?'amber':'green'}/></>},
-    {key:'dates',label:'Delivery Dates',render:o=><><span className="tiny">Vendor</span> {o.vendorDeliveryDate}<br/><span className="tiny">Client</span> {o.clientDeliveryDate}</>},
+    {key:'dates',label:'Main Dates',render:o=><><span className="tiny">Vendor</span> {o.vendorDeliveryDate}<br/><span className="tiny">Client Ref</span> {o.clientDeliveryDate}</>},
     {key:'status',label:'Status',render:o=><StatusBadge status={o.status} pendingFG={o.pendingFG}/>},
     {key:'actions',label:'Actions',render:o=><div className="actions"><Button variant="outline" onClick={()=>setModal({type:'edit',order:o})}>Edit</Button><Button variant="secondary" onClick={()=>setModal({type:'receipt',order:o})}>FG Receipt</Button><Button variant="blue" onClick={()=>setModal({type:'dispatch',order:o})}>Dispatch</Button></div>},
   ];
   return <>
-    <PageHead title="Vendor Order Management" sub="Monitor every ongoing vendor order, production progress, delivery commitment and pending FG">
+    <PageHead title="Vendor Order Management" sub="Monitor vendor orders, date-wise receive plan, production progress and pending FG">
       <Button variant="primary" onClick={()=>setModal({type:'new'})}>+ New Vendor Order</Button>
     </PageHead>
     <DataTable columns={cols} data={metrics.orderRows} searchText="Search order, vendor, client, SKU..." />
     {modal?.type==='new'&&<OrderForm skus={skus} vendors={vendors} clients={clients} onSave={saveOrder} onClose={()=>setModal(null)}/>} 
-    {modal?.type==='edit'&&<OrderForm skus={skus} vendors={vendors} clients={clients} initial={modal.order} onSave={saveOrder} onClose={()=>setModal(null)}/>} 
+    {modal?.type==='edit'&&<OrderForm skus={skus} vendors={vendors} clients={clients} initial={modal.order} initialSplits={vendorSplits.filter(x=>x.vendorOrderId===modal.order.id)} onSave={saveOrder} onClose={()=>setModal(null)}/>} 
     {modal?.type==='receipt'&&<ReceiptForm order={modal.order} skus={skus} onSave={saveReceipt} onClose={()=>setModal(null)}/>} 
     {modal?.type==='dispatch'&&<DispatchForm order={modal.order} skus={skus} clients={clients} onSave={saveDispatch} onClose={()=>setModal(null)}/>} 
     {selected&&<OrderDetail order={selected} metrics={metrics} skus={skus} onClose={()=>setSelected(null)}/>} 
@@ -410,12 +535,82 @@ function OrderDetail({order,metrics,skus,onClose}){
   return <Modal title={`Order Detail - ${o.id}`} onClose={onClose} wide>
     <div className="detail-grid">
       <div className="detail"><label>Vendor</label><strong>{o.vendor}</strong></div><div className="detail"><label>Client</label><strong>{o.client}</strong></div><div className="detail"><label>SKU</label><strong>{o.sku}</strong></div><div className="detail"><label>Status</label><strong><StatusBadge status={o.status} pendingFG={o.pendingFG}/></strong></div>
-      <div className="detail"><label>Order Qty</label><strong>{fN(o.orderQtyPCS)} PCS</strong></div><div className="detail"><label>Received</label><strong>{fN(o.receivedPCS)} PCS / {fN(o.receivedKG)} KG</strong></div><div className="detail"><label>Dispatched</label><strong>{fN(o.dispatchedPCS)} PCS</strong></div><div className="detail"><label>Pending Dispatch</label><strong>{fN(o.pendingDispatch)} PCS</strong></div>
+      <div className="detail"><label>Order Qty</label><strong>{fN(o.orderQtyPCS)} PCS</strong></div><div className="detail"><label>Received</label><strong>{fN(o.receivedPCS)} PCS / {fN(o.receivedKG)} KG</strong></div><div className="detail"><label>Dispatched</label><strong>{fN(o.dispatchedPCS)} PCS</strong></div><div className="detail"><label>Pending FG</label><strong>{fN(o.pendingFG)} PCS</strong></div>
       <div className="detail"><label>RM Issued</label><strong>{fN(o.issuedKG)} KG</strong></div><div className="detail"><label>Wastage</label><strong className={o.wastagePct>5?'red-t':'green-t'}>{fN(o.wastageKG)} KG / {fP(o.wastagePct)}</strong></div><div className="detail"><label>Cost Booked</label><strong>{fC(cost)}</strong></div><div className="detail"><label>Box Weight</label><strong>{sku.stdWeight||0} KG / PCS</strong></div>
     </div>
+    <div style={{marginTop:16}}><Card title="Vendor Delivery Split Plan"><div className="table-wrap"><table className="table" style={{minWidth:650}}><thead><tr><th>Date</th><th>Qty</th><th>Status</th><th>Remarks</th></tr></thead><tbody>{o.splits?.length?o.splits.map(sp=><tr key={sp.id}><td>{sp.date}</td><td className="num blue-t">{fN(sp.qtyPCS)} PCS</td><td><Badge color={sp.status==='Received'?'green':sp.status==='Delayed'?'red':'blue'}>{sp.status}</Badge></td><td>{sp.remarks}</td></tr>):<tr><td colSpan="4" className="center muted">No split plan</td></tr>}</tbody></table></div></Card></div>
   </Modal>
 }
 
+function CustomerOrderForm({skus,clients,initial,initialSplits=[],onSave,onClose}){
+  const blank={date:todayISO(),client:'',sku:'',orderRef:'',totalQtyPCS:'',sellPCS:'',status:'Open',remarks:''};
+  const [f,setF]=useState({...blank,...(initial||{})});
+  const [splits,setSplits]=useState(initialSplits && initialSplits.length ? initialSplits.map(x=>({...x})) : []);
+  const set=(k,v)=>setF(p=>{const u={...p,[k]:v}; if(k==='sku'){const sku=skus.find(s=>s.name===v); if(sku){u.client=sku.client;u.sellPCS=sku.sellPCS}} return u});
+  const addEvenSplits=()=>{
+    const total=safeNum(f.totalQtyPCS); if(!total){alert('Enter customer order qty first');return;}
+    const count=Number(prompt('How many dispatch parts?', '5')||0); if(!count)return;
+    const each=Math.floor(total/count); const rem=total-(each*count);
+    setSplits(Array.from({length:count},(_,i)=>({date:addDays(1+i*2),qtyPCS:each+(i===count-1?rem:0),status:'Pending',remarks:`Dispatch ${i+1}`})));
+  };
+  const splitTotal=splits.reduce((a,r)=>a+safeNum(r.qtyPCS),0);
+  const value=safeNum(f.totalQtyPCS)*safeNum(f.sellPCS);
+  return <Modal title={initial?'Edit Customer Order':'Add Customer Order with Dispatch Split'} onClose={onClose} wide>
+    <div className="form-grid">
+      <Field label="Order Date"><Input type="date" value={f.date} onChange={v=>set('date',v)}/></Field>
+      <Field label="Customer PO / Ref"><Input value={f.orderRef} onChange={v=>set('orderRef',v)} placeholder="e.g. PO No"/></Field>
+      <Field label="Client"><Select value={f.client} onChange={v=>set('client',v)} options={clients.map(c=>c.name)}/></Field>
+      <Field label="SKU"><Select value={f.sku} onChange={v=>set('sku',v)} options={skus.map(s=>s.name)}/></Field>
+      <Field label="Total Customer Order Qty PCS"><Input type="number" value={f.totalQtyPCS} onChange={v=>set('totalQtyPCS',v)} placeholder="e.g. 25000"/></Field>
+      <Field label="Selling Price / PCS"><Input type="number" value={f.sellPCS} onChange={v=>set('sellPCS',v)}/></Field>
+      <Field label="Status"><Select value={f.status} onChange={v=>set('status',v)} options={['Open','Part Dispatched','Closed','Hold','Cancelled']}/></Field>
+      <Field label="Remarks"><Input value={f.remarks} onChange={v=>set('remarks',v)}/></Field>
+      <div style={{gridColumn:'1/-1'}}><Button variant="secondary" onClick={addEvenSplits}>⚡ Auto split dispatch equally</Button> <span className="tiny">Example: 25,000 Yogabaar boxes → 5,000 on 22, 23, 25, 27, 29 May.</span></div>
+      <SplitScheduleEditor title="Customer Dispatch Split Plan" splits={splits} setSplits={setSplits} dateLabel="Dispatch Date" qtyLabel="Dispatch Qty PCS" statusOptions={['Pending','Dispatched','Delayed','Cancelled']}/>
+    </div>
+    <div className="calc-strip"><div className="calc-item"><label>Order Value</label><strong>{fC(value)}</strong></div><div className="calc-item"><label>Total Order Qty</label><strong>{fN(f.totalQtyPCS)} PCS</strong></div><div className="calc-item"><label>Split Planned</label><strong className={splitTotal!==safeNum(f.totalQtyPCS)?'red-t':'green-t'}>{fN(splitTotal)} PCS</strong></div><div className="calc-item"><label>Balance to Split</label><strong>{fN(safeNum(f.totalQtyPCS)-splitTotal)} PCS</strong></div></div>
+    <div className="actions" style={{justifyContent:'flex-end',marginTop:18}}><Button variant="secondary" onClick={onClose}>Cancel</Button><Button onClick={()=>onSave({order:f,splits})}>{initial?'Update Customer Order':'Save Customer Order'}</Button></div>
+  </Modal>
+}
+
+function CustomerOrdersPage({skus,clients,customerOrders,setCustomerOrders,customerSplits,setCustomerSplits,dispatches,setDispatches,metrics}){
+  const [modal,setModal]=useState(null); const [dispatchModal,setDispatchModal]=useState(null);
+  const saveOrder=async(payload)=>{
+    const row=payload.order; const orderId=row.id || genId('CO',customerOrders); const finalOrder={...row,id:orderId};
+    if(row.id) setCustomerOrders(p=>p.map(o=>o.id===row.id?finalOrder:o)); else setCustomerOrders(p=>[{...finalOrder},...p]);
+    const nextCS=nextIdFactory('CS',customerSplits);
+    const cleaned=(payload.splits||[]).filter(x=>safeNum(x.qtyPCS)>0 || x.date).map(x=>({...x,id:x.id||nextCS(),customerOrderId:orderId,status:x.status||'Pending'}));
+    if(sb && row.id){try{await sb.from(CLOUD_TABLES.customerSplits).delete().eq('customerOrderId',row.id)}catch(e){console.error(e)}}
+    setCustomerSplits(p=>[...p.filter(x=>x.customerOrderId!==orderId),...cleaned]);
+    setModal(null);
+  };
+  const saveDispatch=(row)=>{setDispatches(p=>[{...row,id:genId('D',p)},...p]);setDispatchModal(null)};
+  const rows=metrics.customerOrderRows;
+  const cols=[
+    {key:'id',label:'Order',render:o=><span className="num blue-t">{o.id}</span>},
+    {key:'client',label:'Client / SKU',render:o=><><b>{o.client}</b><br/><span className="tiny">{o.sku} · {o.orderRef}</span></>},
+    {key:'total',label:'Order Qty',render:o=><span className="num">{fN(o.totalQtyPCS)} PCS</span>},
+    {key:'splits',label:'Dispatch Split Plan',render:o=><div style={{minWidth:270}}>{o.splits?.length?o.splits.map(sp=><button key={sp.id} className={`badge ${sp.pendingPCS>0?'green':'gray'}`} style={{border:0,margin:'0 5px 5px 0'}} disabled={sp.pendingPCS<=0} onClick={()=>setDispatchModal({date:sp.date,customerOrderId:o.id,customerSplitId:sp.id,client:o.client,sku:o.sku,qtyPCS:sp.pendingPCS>0?sp.pendingPCS:0,sellPCS:o.sellPCS,remarks:`Dispatch against ${sp.id}`})}>{sp.date}: {fN(sp.qtyPCS)}</button>):<span className="tiny">No split plan</span>}</div>},
+    {key:'dispatched',label:'Dispatched',render:o=><span className="num green-t">{fN(o.dispatchedPCS)} PCS</span>},
+    {key:'pending',label:'Pending Dispatch',render:o=><><span className={`num ${o.pendingDispatch?'red-t':'green-t'}`}>{fN(o.pendingDispatch)} PCS</span><Progress pct={o.progress} color={o.progress<40?'red':o.progress<85?'amber':'green'}/></>},
+    {key:'status',label:'Status',render:o=><Badge color={o.status==='Closed'?'green':o.status==='Cancelled'?'red':'blue'}>{o.status||'Open'}</Badge>},
+    {key:'actions',label:'Actions',render:o=><div className="actions"><Button variant="outline" onClick={()=>setModal(o)}>Edit</Button><Button variant="blue" onClick={()=>setDispatchModal({customerOrderId:o.id,client:o.client,sku:o.sku,qtyPCS:o.pendingDispatch,sellPCS:o.sellPCS,remarks:`Dispatch against ${o.id}`})} disabled={o.pendingDispatch<=0}>Dispatch</Button></div>},
+  ];
+  return <>
+    <PageHead title="Customer Orders" sub="Add customer order once, then break dispatch commitment date-wise. Example: 25,000 boxes split into 5,000 each.">
+      <Button variant="primary" onClick={()=>setModal({})}>+ Add Customer Order</Button>
+    </PageHead>
+    <div className="grid kpi-grid compact-kpi-grid" style={{gridTemplateColumns:'repeat(4,minmax(145px,1fr))'}}>
+      <KPI label="Customer Order Qty" value={fN(metrics.totals.customerOrderQty)} sub="Total planned demand" icon="📋" color="blue"/>
+      <KPI label="Dispatch Splits" value={metrics.totals.customerSplits} sub="Date-wise commitments" icon="🗓️" color="green"/>
+      <KPI label="Pending Dispatch" value={fN(metrics.totals.customerPending)} sub="Order balance" icon="🚚" color="red"/>
+      <KPI label="Dispatched Qty" value={fN(metrics.totals.dispatched)} sub="All dispatches" icon="✅" color="purple"/>
+    </div>
+    <DataTable columns={cols} data={rows} searchText="Search customer order, client, SKU..." />
+    {modal&&<CustomerOrderForm skus={skus} clients={clients} initial={modal.id?modal:null} initialSplits={modal.id?customerSplits.filter(x=>x.customerOrderId===modal.id):[]} onSave={saveOrder} onClose={()=>setModal(null)}/>} 
+    {dispatchModal&&<DispatchForm initial={dispatchModal} skus={skus} clients={clients} onSave={saveDispatch} onClose={()=>setDispatchModal(null)}/>} 
+  </>
+}
 
 function RMOrderForm({skus,vendors,initial,onSave,onClose}){
   const blank={date:todayISO(),mill:'',vendor:'',sku:'',rmForBoxes:'',rmKG:'',buyKG:'',expectedDate:addDays(4),status:'Ordered',remarks:''};
@@ -585,6 +780,7 @@ function PnLPage({metrics}){
   </>
 }
 
+
 function CalendarPage({metrics}){
   const parseISO=(iso)=>{const [y,m,d]=String(iso||todayISO()).split('-').map(Number);return new Date(y,(m||1)-1,d||1)};
   const fmt=(d)=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -594,7 +790,6 @@ function CalendarPage({metrics}){
   const [startDate,setStartDate]=useState(todayISO());
   const [endDate,setEndDate]=useState(addDays(14));
   const [filter,setFilter]=useState('All');
-
   const dateList=useMemo(()=>{
     const start=parseISO(startDate); const selectedEnd=parseISO(endDate||startDate); const maxEnd=parseISO(datePlus(startDate,14));
     const finalEnd=selectedEnd<start?start:(selectedEnd>maxEnd?maxEnd:selectedEnd);
@@ -602,68 +797,65 @@ function CalendarPage({metrics}){
     while(d<=finalEnd){out.push(fmt(d));d.setDate(d.getDate()+1)}
     return out;
   },[startDate,endDate]);
-
   const events=useMemo(()=>{
     const list=[];
-    metrics.orderRows.filter(o=>!['Cancelled','Closed'].includes(o.status)).forEach(o=>{
-      const receiveQty=safeNum(o.pendingFG)||safeNum(o.expectedPCS)||safeNum(o.orderQtyPCS);
-      const dispatchQty=safeNum(o.pendingDispatch)||safeNum(o.orderQtyPCS);
-      if(o.vendorDeliveryDate&&receiveQty>0){
-        list.push({date:o.vendorDeliveryDate,kind:'receive',type:'Receive from Vendor',party:o.vendor,sku:o.sku,qty:receiveQty,sub:`${o.id} · ${o.vendor} · ${o.status}`,order:o});
-      }
-      if(o.clientDeliveryDate&&dispatchQty>0){
-        list.push({date:o.clientDeliveryDate,kind:'dispatch',type:'Dispatch to Client',party:o.client,sku:o.sku,qty:dispatchQty,sub:`${o.id} · ${o.client} · pending dispatch`,order:o});
-      }
-    });
+    const vendorSplits=metrics.vendorSplitRows.filter(v=>!['Cancelled','Received'].includes(v.status));
+    if(vendorSplits.length){
+      vendorSplits.forEach(v=>list.push({date:v.date,kind:'receive',type:'Receive from Vendor',party:v.vendor,sku:v.sku,qty:safeNum(v.pendingPCS)||safeNum(v.qtyPCS),sub:`${v.vendorOrderId} · ${v.vendor} · ${v.status}`}));
+    }else{
+      metrics.orderRows.filter(o=>!['Cancelled','Closed'].includes(o.status)).forEach(o=>{const receiveQty=safeNum(o.pendingFG)||safeNum(o.expectedPCS)||safeNum(o.orderQtyPCS);if(o.vendorDeliveryDate&&receiveQty>0)list.push({date:o.vendorDeliveryDate,kind:'receive',type:'Receive from Vendor',party:o.vendor,sku:o.sku,qty:receiveQty,sub:`${o.id} · ${o.vendor} · ${o.status}`});});
+    }
+    const customerSplits=metrics.customerSplitRows.filter(s=>!['Cancelled','Dispatched'].includes(s.status));
+    if(customerSplits.length){
+      customerSplits.forEach(s=>list.push({date:s.date,kind:'dispatch',type:'Dispatch to Client',party:s.client,sku:s.sku,qty:safeNum(s.pendingPCS)||safeNum(s.qtyPCS),sub:`${s.customerOrderId} · ${s.client} · ${s.status}`}));
+    }else{
+      metrics.orderRows.filter(o=>!['Cancelled','Closed'].includes(o.status)).forEach(o=>{const dispatchQty=safeNum(o.pendingDispatch)||safeNum(o.orderQtyPCS);if(o.clientDeliveryDate&&dispatchQty>0)list.push({date:o.clientDeliveryDate,kind:'dispatch',type:'Dispatch to Client',party:o.client,sku:o.sku,qty:dispatchQty,sub:`${o.id} · ${o.client} · pending dispatch`});});
+    }
     return list;
-  },[metrics.orderRows]);
-
+  },[metrics.orderRows,metrics.customerSplitRows,metrics.vendorSplitRows]);
   const visibleEvents=events.filter(e=>dateList.includes(e.date)&&(filter==='All'||e.type===filter)).sort((a,b)=>a.date.localeCompare(b.date)||a.kind.localeCompare(b.kind));
   const receiveCount=visibleEvents.filter(e=>e.kind==='receive').length;
   const dispatchCount=visibleEvents.filter(e=>e.kind==='dispatch').length;
   const reset15=()=>{const t=todayISO();setStartDate(t);setEndDate(addDays(14));};
-
   return <>
-    <PageHead title="15 Days Delivery Planning" sub="Blue = Receive from Vendor · Green = Dispatch to Client · format shown as QTY - SKU Name">
+    <PageHead title="15 Days Delivery Planning" sub="Blue = Receive from Vendor · Green = Dispatch to Client · format: QTY - SKU Name">
       <input className="inp" style={{width:150}} type="date" value={startDate} onChange={e=>setStartDate(e.target.value)}/>
       <input className="inp" style={{width:150}} type="date" value={endDate} min={startDate} max={datePlus(startDate,14)} onChange={e=>setEndDate(e.target.value)}/>
       <select className="sel" style={{width:190}} value={filter} onChange={e=>setFilter(e.target.value)}><option>All</option><option>Receive from Vendor</option><option>Dispatch to Client</option></select>
       <Button variant="secondary" onClick={reset15}>Today + 15 Days</Button>
       <Button variant="secondary" onClick={()=>exportCSV(visibleEvents,'15_day_delivery_plan.csv')}>⬇ Export Plan</Button>
     </PageHead>
-
     <div className="grid kpi-grid" style={{gridTemplateColumns:'repeat(4,minmax(180px,1fr))'}}>
       <KPI label="Planning Range" value={`${dateList.length} Days`} sub={`${pretty(dateList[0])} to ${pretty(dateList[dateList.length-1])}`} icon="🗓️" color="blue"/>
       <KPI label="Receive from Vendor" value={receiveCount} sub={`${fN(visibleEvents.filter(e=>e.kind==='receive').reduce((a,e)=>a+safeNum(e.qty),0))} PCS`} icon="📥" color="blue"/>
       <KPI label="Dispatch to Client" value={dispatchCount} sub={`${fN(visibleEvents.filter(e=>e.kind==='dispatch').reduce((a,e)=>a+safeNum(e.qty),0))} PCS`} icon="🚚" color="green"/>
-      <KPI label="Total Tasks" value={visibleEvents.length} sub="Shown within selected 15-day window" icon="✅" color="purple"/>
+      <KPI label="Total Events" value={visibleEvents.length} sub="Within selected 15-day range" icon="📌"/>
     </div>
-
-    <Card title="15-Day Planning Board" action={<div className="legend"><span><i className="legend-dot blue"></i> Receive from Vendor</span><span><i className="legend-dot green"></i> Dispatch to Client</span></div>}>
-      <div className="plan-board">
-        <div className="plan-grid" style={{gridTemplateColumns:`repeat(${dateList.length}, minmax(185px, 1fr))`}}>
-          {dateList.map(date=>{
-            const dayEvents=visibleEvents.filter(e=>e.date===date);
-            return <div key={date} className="day plan-day">
-              <div className="dnum">{dayName(date)} · {pretty(date)}</div>
-              {dayEvents.length?dayEvents.map((e,i)=><span key={i} className={`chip ${e.kind}`} title={`${e.type} · ${e.party}`}>
-                {fN(e.qty)} PCS - {e.sku}
-                <small>{e.type}<br/>{e.party}</small>
-              </span>):<span className="tiny">No plan</span>}
+    <div className="compact-card"><Card title="15-Day Daily Planning Layout" action={<div className="legend"><span><i className="legend-dot blue"></i> Receive from Vendor</span><span><i className="legend-dot green"></i> Dispatch to Client</span></div>}>
+      <div className="calendar-agenda">
+        {dateList.map(dt=>{
+          const evs=visibleEvents.filter(e=>e.date===dt);
+          const rec=evs.filter(e=>e.kind==='receive');
+          const dis=evs.filter(e=>e.kind==='dispatch');
+          const recQty=rec.reduce((a,e)=>a+safeNum(e.qty),0);
+          const disQty=dis.reduce((a,e)=>a+safeNum(e.qty),0);
+          return <div key={dt} className="agenda-row">
+            <div className="agenda-date"><div><b>{pretty(dt)}</b><span>{dayName(dt)}</span></div><small>{rec.length+dis.length} plan · {fN(recQty+disQty)} PCS</small></div>
+            <div className="agenda-lane receive-lane">
+              <div className="lane-head"><span>📥 Receive from Vendor</span><strong>{fN(recQty)} PCS</strong></div>
+              {rec.length?rec.map((e,i)=><div key={i} className="agenda-chip receive" title={e.sub}><b>{fN(e.qty)} PCS - {e.sku}</b><span>{e.party} · {e.sub}</span></div>):<div className="empty-lane">No vendor receipt planned</div>}
             </div>
-          })}
-        </div>
+            <div className="agenda-lane dispatch-lane">
+              <div className="lane-head"><span>🚚 Dispatch to Client</span><strong>{fN(disQty)} PCS</strong></div>
+              {dis.length?dis.map((e,i)=><div key={i} className="agenda-chip dispatch" title={e.sub}><b>{fN(e.qty)} PCS - {e.sku}</b><span>{e.party} · {e.sub}</span></div>):<div className="empty-lane">No client dispatch planned</div>}
+            </div>
+          </div>
+        })}
       </div>
-    </Card>
-
-    <div style={{height:16}}></div>
-    <Card title="Planning List">
-      <div className="table-wrap"><table className="table" style={{minWidth:820}}><thead><tr><th>Date</th><th>Type</th><th>QTY - SKU Name</th><th>Vendor / Client</th><th>Order</th><th>Status</th></tr></thead><tbody>{visibleEvents.length?visibleEvents.map((e,i)=><tr key={i}><td><b>{pretty(e.date)}</b><br/><span className="tiny">{dayName(e.date)}</span></td><td><Badge color={e.kind==='receive'?'blue':'green'}>{e.type}</Badge></td><td><span className={e.kind==='receive'?'blue-t num':'green-t num'}>{fN(e.qty)} PCS - {e.sku}</span></td><td>{e.party}</td><td>{e.order.id}</td><td><StatusBadge status={e.order.status} pendingFG={e.order.pendingFG}/></td></tr>):<tr><td colSpan="6" className="center muted" style={{padding:36}}>No receive/dispatch plan in this selected range</td></tr>}</tbody></table></div>
-    </Card>
+    </Card></div>
+    <div style={{marginTop:10}}><DataTable columns={[{key:'date',label:'Date'},{key:'type',label:'Type',render:e=><Badge color={e.kind==='receive'?'blue':'green'}>{e.type}</Badge>},{key:'qty',label:'Qty - SKU',render:e=><span className={`num ${e.kind==='receive'?'blue-t':'green-t'}`}>{fN(e.qty)} PCS - {e.sku}</span>},{key:'party',label:'Vendor / Client'},{key:'sub',label:'Reference'}]} data={visibleEvents} searchText="Search 15-day plan..." /></div>
   </>
 }
-
-
 
 function ClientMasterForm({initial,onSave,onClose}){
   const blank={name:'',contact:'',mobile:'',email:'',gst:'',billing:'',shipping:'',terms:'30 days',status:'Active',notes:''};
@@ -818,9 +1010,9 @@ function MastersPage({skus,setSkus,vendors,setVendors,clients,setClients}){
 
 function Sidebar({page,setPage}){
   const items=[
-    ['dashboard','📊','Command Center'],['orders','🏭','Vendor Orders'],['inventory','📦','Inventory Control'],['jobwork','⚖️','RM vs FG Job Work'],['dispatch','🚚','Dispatch Control'],['pnl','💰','Profit & Loss'],['calendar','🗓️','Delivery Calendar'],['masters','⚙️','Masters']
+    ['dashboard','📊','Command Center'],['customerOrders','📋','Customer Orders'],['orders','🏭','Vendor Orders'],['inventory','📦','Inventory Control'],['jobwork','⚖️','RM vs FG Job Work'],['dispatch','🚚','Dispatch Control'],['pnl','💰','Profit & Loss'],['calendar','🗓️','Delivery Calendar'],['masters','⚙️','Masters']
   ];
-  return <aside className="sidebar"><div className="brand"><div className="logo">📦</div><h1>Bangalore Plant MIS</h1><p>Contract manufacturing + trading control</p></div><div className="nav">{items.map(([id,ico,label])=><button key={id} className={page===id?'active':''} onClick={()=>setPage(id)}><span className="ico">{ico}</span>{label}</button>)}</div><div className="sidebar-footer">Calendar is a separate left panel item. Inventory includes stock, production orders and mill RM orders.</div></aside>
+  return <aside className="sidebar"><div className="brand"><div className="logo">📦</div><h1>BGSG-BLR</h1><p>Contract manufacturing + trading control</p></div><div className="nav">{items.map(([id,ico,label])=><button key={id} className={page===id?'active':''} onClick={()=>setPage(id)}><span className="ico">{ico}</span>{label}</button>)}</div><div className="sidebar-footer">Made for Details</div></aside>
 }
 
 function App(){
@@ -832,15 +1024,20 @@ function App(){
   const [receipts,setReceipts,receiptsSync]=useSupabaseState(CLOUD_TABLES.receipts,'bp_receipts_v4',START_RECEIPTS);
   const [dispatches,setDispatches,dispatchesSync]=useSupabaseState(CLOUD_TABLES.dispatches,'bp_dispatches_v4',START_DISPATCHES);
   const [rmOrders,setRmOrders,rmOrdersSync]=useSupabaseState(CLOUD_TABLES.rmOrders,'bp_rm_orders_v4',START_RM_ORDERS);
-  const metrics=useMemo(()=>makeMetrics(skus,orders,receipts,dispatches,rmOrders),[skus,orders,receipts,dispatches,rmOrders]);
-  const backup={clients,vendors,skus,orders,receipts,dispatches,rmOrders};
-  const syncs=[clientsSync,vendorsSync,skusSync,ordersSync,receiptsSync,dispatchesSync,rmOrdersSync];
+  const [customerOrders,setCustomerOrders,customerOrdersSync]=useSupabaseState(CLOUD_TABLES.customerOrders,'bp_customer_orders_v1',START_CUSTOMER_ORDERS);
+  const [customerSplits,setCustomerSplits,customerSplitsSync]=useSupabaseState(CLOUD_TABLES.customerSplits,'bp_customer_splits_v1',START_CUSTOMER_SPLITS);
+  const [vendorSplits,setVendorSplits,vendorSplitsSync]=useSupabaseState(CLOUD_TABLES.vendorSplits,'bp_vendor_splits_v1',START_VENDOR_SPLITS);
+  const metrics=useMemo(()=>makeMetrics(skus,orders,receipts,dispatches,rmOrders,customerOrders,customerSplits,vendorSplits),[skus,orders,receipts,dispatches,rmOrders,customerOrders,customerSplits,vendorSplits]);
+  const backup={clients,vendors,skus,orders,receipts,dispatches,rmOrders,customerOrders,customerSplits,vendorSplits};
+  const syncs=[clientsSync,vendorsSync,skusSync,ordersSync,receiptsSync,dispatchesSync,rmOrdersSync,customerOrdersSync,customerSplitsSync,vendorSplitsSync];
   const hasError=syncs.some(x=>String(x.status).toLowerCase().includes('error'));
+  const syncErrors=syncs.filter(x=>String(x.status).toLowerCase().includes('error')).map(x=>`${x.table}: ${x.error}`).join('\n');
   const cloudText=!sb?'Local only':hasError?'Supabase sync issue':'Supabase cloud sync active';
   return <div className="app"><Sidebar page={page} setPage={setPage}/><main className="main">
-    <div className="actions no-print" style={{justifyContent:'flex-end',marginBottom:12}}><span className={`badge ${hasError?'red':'green'}`}>{cloudText}</span><Button variant="secondary" onClick={()=>downloadBackup(backup)}>💾 Backup JSON</Button><Button variant="secondary" onClick={()=>window.print()}>🖨 Print</Button></div>
+    <div className="actions no-print" style={{justifyContent:'flex-end',marginBottom:12}}><span title={syncErrors} className={`badge ${hasError?'red':'green'}`}>{cloudText}</span>{hasError&&<Button variant="secondary" onClick={()=>alert(syncErrors || 'No error detail found')}>⚠ Sync Details</Button>}<Button variant="secondary" onClick={()=>downloadBackup(backup)}>💾 Backup JSON</Button><Button variant="secondary" onClick={()=>window.print()}>🖨 Print</Button></div>
     {page==='dashboard'&&<Dashboard metrics={metrics} setPage={setPage}/>} 
-    {page==='orders'&&<OrdersPage skus={skus} vendors={vendors} clients={clients} orders={orders} setOrders={setOrders} receipts={receipts} setReceipts={setReceipts} dispatches={dispatches} setDispatches={setDispatches} metrics={metrics}/>} 
+    {page==='customerOrders'&&<CustomerOrdersPage skus={skus} clients={clients} customerOrders={customerOrders} setCustomerOrders={setCustomerOrders} customerSplits={customerSplits} setCustomerSplits={setCustomerSplits} dispatches={dispatches} setDispatches={setDispatches} metrics={metrics}/>} 
+    {page==='orders'&&<OrdersPage skus={skus} vendors={vendors} clients={clients} orders={orders} setOrders={setOrders} receipts={receipts} setReceipts={setReceipts} dispatches={dispatches} setDispatches={setDispatches} vendorSplits={vendorSplits} setVendorSplits={setVendorSplits} metrics={metrics}/>} 
     {page==='inventory'&&<InventoryPage skus={skus} setSkus={setSkus} vendors={vendors} rmOrders={rmOrders} setRmOrders={setRmOrders} metrics={metrics}/>} 
     {page==='jobwork'&&<JobWorkPage orders={orders} receipts={receipts} setReceipts={setReceipts} metrics={metrics} skus={skus}/>} 
     {page==='dispatch'&&<DispatchPage skus={skus} clients={clients} setDispatches={setDispatches} metrics={metrics}/>} 
