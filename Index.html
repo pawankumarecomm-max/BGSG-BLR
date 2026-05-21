@@ -664,16 +664,155 @@ function CalendarPage({metrics}){
 }
 
 
+
+function ClientMasterForm({initial,onSave,onClose}){
+  const blank={name:'',contact:'',mobile:'',email:'',gst:'',billing:'',shipping:'',terms:'30 days',status:'Active',notes:''};
+  const [f,setF]=useState({...blank,...(initial||{})});
+  const set=(k,v)=>setF(p=>({...p,[k]:v}));
+  const save=()=>{
+    if(!String(f.name||'').trim()){alert('Client name is required');return;}
+    onSave({...f,name:String(f.name).trim()});
+  };
+  return <Modal title={initial?'Edit Client Master':'Add Client Master'} onClose={onClose} wide>
+    <div className="form-grid">
+      <Field label="Client Name"><Input value={f.name} onChange={v=>set('name',v)} placeholder="e.g. Yogabaar"/></Field>
+      <Field label="Contact Person"><Input value={f.contact} onChange={v=>set('contact',v)} placeholder="Contact name"/></Field>
+      <Field label="Mobile"><Input value={f.mobile} onChange={v=>set('mobile',v)} placeholder="Mobile number"/></Field>
+      <Field label="Email"><Input value={f.email} onChange={v=>set('email',v)} placeholder="email@company.com"/></Field>
+      <Field label="GST Number"><Input value={f.gst} onChange={v=>set('gst',v)} placeholder="GSTIN"/></Field>
+      <Field label="Payment Terms"><Select value={f.terms} onChange={v=>set('terms',v)} options={['Advance','7 days','15 days','30 days','45 days','60 days']}/></Field>
+      <Field label="Billing Address" full><textarea className="txt" rows="2" value={f.billing||''} onChange={e=>set('billing',e.target.value)} placeholder="Billing address"></textarea></Field>
+      <Field label="Shipping Address" full><textarea className="txt" rows="2" value={f.shipping||''} onChange={e=>set('shipping',e.target.value)} placeholder="Shipping address"></textarea></Field>
+      <Field label="Status"><Select value={f.status} onChange={v=>set('status',v)} options={['Active','Inactive']}/></Field>
+      <Field label="Notes"><Input value={f.notes} onChange={v=>set('notes',v)} placeholder="Any extra client detail"/></Field>
+    </div>
+    <div className="actions" style={{justifyContent:'flex-end',marginTop:18}}><Button variant="secondary" onClick={onClose}>Cancel</Button><Button onClick={save}>{initial?'Update Client':'Save Client'}</Button></div>
+  </Modal>
+}
+
+function VendorMasterForm({initial,onSave,onClose}){
+  const blank={name:'',contact:'',mobile:'',email:'',gst:'',location:'',rate:'',wastageAllowance:3,status:'Active',notes:''};
+  const [f,setF]=useState({...blank,...(initial||{})});
+  const set=(k,v)=>setF(p=>({...p,[k]:v}));
+  const save=()=>{
+    if(!String(f.name||'').trim()){alert('Vendor name is required');return;}
+    onSave({...f,name:String(f.name).trim(),rate:safeNum(f.rate),wastageAllowance:safeNum(f.wastageAllowance)});
+  };
+  return <Modal title={initial?'Edit Vendor / Job Worker':'Add Vendor / Job Worker'} onClose={onClose} wide>
+    <div className="form-grid">
+      <Field label="Vendor / Job Worker Name"><Input value={f.name} onChange={v=>set('name',v)} placeholder="e.g. Lakshmi Box Works"/></Field>
+      <Field label="Location"><Input value={f.location} onChange={v=>set('location',v)} placeholder="Factory location"/></Field>
+      <Field label="Contact Person"><Input value={f.contact} onChange={v=>set('contact',v)} placeholder="Contact name"/></Field>
+      <Field label="Mobile"><Input value={f.mobile} onChange={v=>set('mobile',v)} placeholder="Mobile number"/></Field>
+      <Field label="Email"><Input value={f.email} onChange={v=>set('email',v)} placeholder="email@vendor.com"/></Field>
+      <Field label="GST Number"><Input value={f.gst} onChange={v=>set('gst',v)} placeholder="GSTIN"/></Field>
+      <Field label="Job Work / Mfg Rate per KG"><Input type="number" value={f.rate} onChange={v=>set('rate',v)} placeholder="₹ / KG"/></Field>
+      <Field label="Wastage Allowance %"><Input type="number" value={f.wastageAllowance} onChange={v=>set('wastageAllowance',v)} placeholder="3"/></Field>
+      <Field label="Status"><Select value={f.status} onChange={v=>set('status',v)} options={['Active','Inactive']}/></Field>
+      <Field label="Notes"><Input value={f.notes} onChange={v=>set('notes',v)} placeholder="Any extra vendor detail"/></Field>
+    </div>
+    <div className="actions" style={{justifyContent:'flex-end',marginTop:18}}><Button variant="secondary" onClick={onClose}>Cancel</Button><Button onClick={save}>{initial?'Update Vendor':'Save Vendor'}</Button></div>
+  </Modal>
+}
+
+function SKUMasterForm({initial,onSave,onClose,clients}){
+  const blank={name:'',client:'',size:'',ply:'3 Ply',gsm:'',unit:'PCS',stdWeight:'',openingStockPCS:0,dailyUse:0,sellPCS:'',sellKG:'',buyKG:'',mfgKG:'',logCost:'',idealWastage:3,status:'Active',notes:''};
+  const [f,setF]=useState({...blank,...(initial||{})});
+  const set=(k,v)=>setF(p=>({...p,[k]:v}));
+  const save=()=>{
+    if(!String(f.name||'').trim()){alert('SKU name is required');return;}
+    onSave({
+      ...f,
+      name:String(f.name).trim(),
+      stdWeight:safeNum(f.stdWeight),openingStockPCS:safeNum(f.openingStockPCS),dailyUse:safeNum(f.dailyUse),
+      sellPCS:safeNum(f.sellPCS),sellKG:safeNum(f.sellKG),buyKG:safeNum(f.buyKG),mfgKG:safeNum(f.mfgKG),logCost:safeNum(f.logCost),idealWastage:safeNum(f.idealWastage)
+    });
+  };
+  return <Modal title={initial?'Edit SKU / Box Master':'Add SKU / Box Master'} onClose={onClose} wide>
+    <div className="form-grid">
+      <Field label="SKU / Box Name"><Input value={f.name} onChange={v=>set('name',v)} placeholder="e.g. Yogabaar 5 Ply Box"/></Field>
+      <Field label="Client"><Select value={f.client} onChange={v=>set('client',v)} options={clients.map(c=>c.name)}/></Field>
+      <Field label="Box Size"><Input value={f.size} onChange={v=>set('size',v)} placeholder="L×W×H cm"/></Field>
+      <Field label="Ply"><Select value={f.ply} onChange={v=>set('ply',v)} options={['3 Ply','5 Ply','7 Ply','9 Ply']}/></Field>
+      <Field label="GSM / Paper Combination"><Input value={f.gsm} onChange={v=>set('gsm',v)} placeholder="120/90/120"/></Field>
+      <Field label="Selling Unit"><Select value={f.unit} onChange={v=>set('unit',v)} options={['PCS','KG']}/></Field>
+      <Field label="Std Weight per PCS in KG"><Input type="number" value={f.stdWeight} onChange={v=>set('stdWeight',v)} placeholder="0.80"/></Field>
+      <Field label="Opening Stock PCS"><Input type="number" value={f.openingStockPCS} onChange={v=>set('openingStockPCS',v)} placeholder="0"/></Field>
+      <Field label="Daily Consumption / Plan PCS"><Input type="number" value={f.dailyUse} onChange={v=>set('dailyUse',v)} placeholder="For stock days prediction"/></Field>
+      <Field label="Selling Price / PCS"><Input type="number" value={f.sellPCS} onChange={v=>set('sellPCS',v)} placeholder="₹"/></Field>
+      <Field label="Selling Price / KG"><Input type="number" value={f.sellKG} onChange={v=>set('sellKG',v)} placeholder="₹"/></Field>
+      <Field label="Buying Cost / KG"><Input type="number" value={f.buyKG} onChange={v=>set('buyKG',v)} placeholder="₹"/></Field>
+      <Field label="Job Work / Mfg Cost / KG"><Input type="number" value={f.mfgKG} onChange={v=>set('mfgKG',v)} placeholder="₹"/></Field>
+      <Field label="Logistics Cost / KG"><Input type="number" value={f.logCost} onChange={v=>set('logCost',v)} placeholder="₹"/></Field>
+      <Field label="Ideal Wastage %"><Input type="number" value={f.idealWastage} onChange={v=>set('idealWastage',v)} placeholder="3"/></Field>
+      <Field label="Status"><Select value={f.status} onChange={v=>set('status',v)} options={['Active','Inactive']}/></Field>
+      <Field label="Notes" full><Input value={f.notes} onChange={v=>set('notes',v)} placeholder="Any extra SKU detail"/></Field>
+    </div>
+    <div className="calc-strip"><div className="calc-item"><label>7 Days Safety Stock</label><strong>{fN(safeNum(f.dailyUse)*7)} PCS</strong></div><div className="calc-item"><label>RM for 1,000 PCS</label><strong>{fN(safeNum(f.stdWeight)*1000/(1-safeNum(f.idealWastage)/100))} KG</strong></div><div className="calc-item"><label>Sell Value / 1,000 PCS</label><strong>{fC(safeNum(f.sellPCS)*1000)}</strong></div><div className="calc-item"><label>RM Cost / 1,000 PCS</label><strong>{fC((safeNum(f.stdWeight)*1000/(1-safeNum(f.idealWastage)/100))*safeNum(f.buyKG))}</strong></div></div>
+    <div className="actions" style={{justifyContent:'flex-end',marginTop:18}}><Button variant="secondary" onClick={onClose}>Cancel</Button><Button onClick={save}>{initial?'Update SKU':'Save SKU'}</Button></div>
+  </Modal>
+}
+
 function MastersPage({skus,setSkus,vendors,setVendors,clients,setClients}){
   const [tab,setTab]=useState('skus');
-  const skuCols=[{key:'id',label:'ID'},{key:'name',label:'SKU'},{key:'client',label:'Client'},{key:'size',label:'Size'},{key:'ply',label:'Ply'},{key:'weight',label:'Weight',render:s=>`${s.stdWeight} KG`},{key:'sell',label:'Sell',render:s=>`₹${s.sellPCS}/PCS`}];
-  const vendorCols=[{key:'id',label:'ID'},{key:'name',label:'Vendor'},{key:'location',label:'Location'},{key:'rate',label:'Rate/KG',render:v=>fC(v.rate)},{key:'wastageAllowance',label:'Wastage %',render:v=>`${v.wastageAllowance}%`}];
-  const clientCols=[{key:'id',label:'ID'},{key:'name',label:'Client'},{key:'contact',label:'Contact'},{key:'mobile',label:'Mobile'},{key:'gst',label:'GST'},{key:'terms',label:'Terms'}];
+  const [modal,setModal]=useState(null);
+  const [editRow,setEditRow]=useState(null);
+
+  const addNew=()=>{setEditRow(null);setModal(tab)};
+  const edit=(type,row)=>{setEditRow(row);setModal(type)};
+  const close=()=>{setModal(null);setEditRow(null)};
+
+  const saveClient=(row)=>{
+    if(editRow) setClients(p=>p.map(x=>x.id===editRow.id?{...x,...row,id:editRow.id}:x));
+    else setClients(p=>[...p,{...row,id:genId('C',p)}]);
+    close();
+  };
+  const saveVendor=(row)=>{
+    if(editRow) setVendors(p=>p.map(x=>x.id===editRow.id?{...x,...row,id:editRow.id}:x));
+    else setVendors(p=>[...p,{...row,id:genId('V',p)}]);
+    close();
+  };
+  const saveSKU=(row)=>{
+    if(editRow) setSkus(p=>p.map(x=>x.id===editRow.id?{...x,...row,id:editRow.id}:x));
+    else setSkus(p=>[...p,{...row,id:genId('S',p)}]);
+    close();
+  };
+
+  const removeCloud=async(table,id)=>{try{if(sb) await sb.from(table).delete().eq('id',id)}catch(e){console.error(e)}};
+  const del=(type,row)=>{
+    if(!window.confirm(`Delete ${row.name || row.id}?`)) return;
+    if(type==='skus'){setSkus(p=>p.filter(x=>x.id!==row.id));removeCloud(CLOUD_TABLES.skus,row.id)}
+    if(type==='vendors'){setVendors(p=>p.filter(x=>x.id!==row.id));removeCloud(CLOUD_TABLES.vendors,row.id)}
+    if(type==='clients'){setClients(p=>p.filter(x=>x.id!==row.id));removeCloud(CLOUD_TABLES.clients,row.id)}
+  };
+
+  const actionCol=(type)=>({key:'actions',label:'Actions',render:r=><div className="actions" style={{marginTop:0}}><Button variant="outline" onClick={()=>edit(type,r)}>Edit</Button><Button variant="danger" onClick={()=>del(type,r)}>Delete</Button></div>});
+
+  const skuCols=[
+    {key:'id',label:'ID',render:s=><span className="num blue-t">{s.id}</span>},{key:'name',label:'SKU Name',render:s=><b>{s.name}</b>},{key:'client',label:'Client'},{key:'size',label:'Size'},{key:'ply',label:'Ply'},
+    {key:'stdWeight',label:'Weight/PCS',render:s=>`${fN(s.stdWeight,3)} KG`},{key:'openingStockPCS',label:'Opening Stock',render:s=><span className="num green-t">{fN(s.openingStockPCS)}</span>},{key:'dailyUse',label:'Daily Use',render:s=>fN(s.dailyUse)},
+    {key:'sellPCS',label:'Sell/PCS',render:s=>fC(s.sellPCS)},{key:'buyKG',label:'Buy/KG',render:s=>fC(s.buyKG)},{key:'mfgKG',label:'Mfg/KG',render:s=>fC(s.mfgKG)},{key:'status',label:'Status',render:s=><Badge color={s.status==='Active'?'green':'gray'}>{s.status||'Active'}</Badge>},actionCol('skus')
+  ];
+  const vendorCols=[
+    {key:'id',label:'ID',render:v=><span className="num blue-t">{v.id}</span>},{key:'name',label:'Vendor / Job Worker',render:v=><b>{v.name}</b>},{key:'contact',label:'Contact'},{key:'mobile',label:'Mobile'},{key:'location',label:'Location'},
+    {key:'gst',label:'GST'},{key:'rate',label:'Rate/KG',render:v=>fC(v.rate)},{key:'wastageAllowance',label:'Wastage %',render:v=>`${fN(v.wastageAllowance,2)}%`},{key:'status',label:'Status',render:v=><Badge color={v.status==='Active'?'green':'gray'}>{v.status||'Active'}</Badge>},actionCol('vendors')
+  ];
+  const clientCols=[
+    {key:'id',label:'ID',render:c=><span className="num blue-t">{c.id}</span>},{key:'name',label:'Client',render:c=><b>{c.name}</b>},{key:'contact',label:'Contact'},{key:'mobile',label:'Mobile'},{key:'email',label:'Email'},{key:'gst',label:'GST'},{key:'terms',label:'Terms'},{key:'status',label:'Status',render:c=><Badge color={c.status==='Active'?'green':'gray'}>{c.status||'Active'}</Badge>},actionCol('clients')
+  ];
+
+  const sub={skus:'Add/edit box SKU, pricing, daily consumption and safety-stock settings',vendors:'Add/edit job workers, manufacturing rates, wastage and contact details',clients:'Add/edit clients, GST, contact and billing details'}[tab];
   return <>
-    <PageHead title="Masters" sub="SKU, vendor and client master data used across orders, stock and P&L"><div className="tabs"><button className={tab==='skus'?'active':''} onClick={()=>setTab('skus')}>SKU</button><button className={tab==='vendors'?'active':''} onClick={()=>setTab('vendors')}>Vendors</button><button className={tab==='clients'?'active':''} onClick={()=>setTab('clients')}>Clients</button></div></PageHead>
-    {tab==='skus'&&<DataTable columns={skuCols} data={skus} searchText="Search SKU..."/>}
-    {tab==='vendors'&&<DataTable columns={vendorCols} data={vendors} searchText="Search vendor..."/>}
-    {tab==='clients'&&<DataTable columns={clientCols} data={clients} searchText="Search client..."/>}
+    <PageHead title="Masters" sub={sub}>
+      <div className="tabs"><button className={tab==='skus'?'active':''} onClick={()=>setTab('skus')}>SKU Master</button><button className={tab==='vendors'?'active':''} onClick={()=>setTab('vendors')}>Vendor Master</button><button className={tab==='clients'?'active':''} onClick={()=>setTab('clients')}>Client Master</button></div>
+      <Button onClick={addNew}>+ Add {tab==='skus'?'SKU':tab==='vendors'?'Vendor':'Client'}</Button>
+    </PageHead>
+    {tab==='skus'&&<DataTable columns={skuCols} data={skus} searchText="Search SKU master..."/>}
+    {tab==='vendors'&&<DataTable columns={vendorCols} data={vendors} searchText="Search vendor master..."/>}
+    {tab==='clients'&&<DataTable columns={clientCols} data={clients} searchText="Search client master..."/>}
+    {modal==='skus'&&<SKUMasterForm initial={editRow} clients={clients} onSave={saveSKU} onClose={close}/>} 
+    {modal==='vendors'&&<VendorMasterForm initial={editRow} onSave={saveVendor} onClose={close}/>} 
+    {modal==='clients'&&<ClientMasterForm initial={editRow} onSave={saveClient} onClose={close}/>} 
   </>
 }
 
@@ -681,7 +820,7 @@ function Sidebar({page,setPage}){
   const items=[
     ['dashboard','📊','Command Center'],['orders','🏭','Vendor Orders'],['inventory','📦','Inventory Control'],['jobwork','⚖️','RM vs FG Job Work'],['dispatch','🚚','Dispatch Control'],['pnl','💰','Profit & Loss'],['calendar','🗓️','Delivery Calendar'],['masters','⚙️','Masters']
   ];
-  return <aside className="sidebar"><div className="brand"><div className="logo">📦</div><h1>BGSG-BLR</h1><p>Contract manufacturing + trading control</p></div><div className="nav">{items.map(([id,ico,label])=><button key={id} className={page===id?'active':''} onClick={()=>setPage(id)}><span className="ico">{ico}</span>{label}</button>)}</div><div className="sidebar-footer">BGSG-BLR</div></aside>
+  return <aside className="sidebar"><div className="brand"><div className="logo">📦</div><h1>Bangalore Plant MIS</h1><p>Contract manufacturing + trading control</p></div><div className="nav">{items.map(([id,ico,label])=><button key={id} className={page===id?'active':''} onClick={()=>setPage(id)}><span className="ico">{ico}</span>{label}</button>)}</div><div className="sidebar-footer">Calendar is a separate left panel item. Inventory includes stock, production orders and mill RM orders.</div></aside>
 }
 
 function App(){
