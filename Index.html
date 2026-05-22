@@ -321,7 +321,22 @@ function DataTable({columns,data,searchText='Search...',children}){
 }
 
 
-function makeMetrics(skus,orders,receipts,dispatches,rmOrders=[],customerOrders=[],customerSplits=[],vendorSplits=[]){
+function makeMetrics(skus,ordersRaw,receiptsRaw,dispatchesRaw,rmOrders=[],customerOrders=[],customerSplits=[],vendorSplits=[]){
+  // ── SKU alias resolver: map any order/receipt/dispatch sku to current canonical sku.name ──
+  // Handles SKU renames in Masters (e.g. "Yogabaar 1KG" → "Yogabaar High Protine Oats 1KG")
+  const normSku=(n)=>String(n||'').toLowerCase().replace(/\s+/g,'');
+  const resolveSkuName=(rawSku)=>{
+    if(!rawSku)return rawSku;
+    const exact=skus.find(s=>s.name===rawSku); if(exact)return exact.name;
+    const norm=normSku(rawSku);
+    const match=skus.find(s=>normSku(s.name).includes(norm)||norm.includes(normSku(s.name)));
+    return match?match.name:rawSku;
+  };
+  const orders=ordersRaw.map(o=>({...o,sku:resolveSkuName(o.sku)}));
+  const receipts=receiptsRaw.map(r=>({...r,sku:resolveSkuName(r.sku)}));
+  const dispatches=dispatchesRaw.map(d=>({...d,sku:resolveSkuName(d.sku)}));
+  customerOrders=customerOrders.map(co=>({...co,sku:resolveSkuName(co.sku)}));
+  customerSplits=customerSplits.map(cs=>({...cs})); // splits reference by ID, sku comes via join
   const receiptByOrder={}; receipts.forEach(r=>{if(!receiptByOrder[r.orderId])receiptByOrder[r.orderId]={kg:0,pcs:0};receiptByOrder[r.orderId].kg+=safeNum(r.receivedKG);receiptByOrder[r.orderId].pcs+=safeNum(r.receivedPCS)});
   const dispatchByOrder={}; dispatches.forEach(d=>{if(d.orderId){if(!dispatchByOrder[d.orderId])dispatchByOrder[d.orderId]={kg:0,pcs:0};dispatchByOrder[d.orderId].kg+=safeNum(d.qtyKG);dispatchByOrder[d.orderId].pcs+=safeNum(d.qtyPCS)}});
   const receiptBySku={}; receipts.forEach(r=>{if(!receiptBySku[r.sku])receiptBySku[r.sku]={kg:0,pcs:0};receiptBySku[r.sku].kg+=safeNum(r.receivedKG);receiptBySku[r.sku].pcs+=safeNum(r.receivedPCS)});
@@ -567,6 +582,8 @@ function DispatchForm({order,skus,clients,initial,onSave,onClose}){
 
 function OrdersPage({skus,vendors,clients,orders,setOrders,receipts,setReceipts,dispatches,setDispatches,vendorSplits,setVendorSplits,metrics}){
   const [modal,setModal]=useState(null); const [selected,setSelected]=useState(null);
+  const [view,setView]=useState('orders'); // 'orders' | 'vendor'
+  const [vendorFilter,setVendorFilter]=useState('All');
   const saveOrder=async(payload)=>{
     const row=payload.order||payload; const splitRows=payload.splits||[];
     const orderId=row.id || genId('O',orders);
@@ -580,6 +597,27 @@ function OrdersPage({skus,vendors,clients,orders,setOrders,receipts,setReceipts,
   };
   const saveReceipt=(row)=>{setReceipts(p=>[{...row,id:genId('R',p)},...p]);setModal(null)};
   const saveDispatch=(row)=>{setDispatches(p=>[{...row,id:genId('D',p)},...p]);setModal(null)};
+
+  // Build vendor summary
+  const vendorSummary=useMemo(()=>{
+    const map={};
+    metrics.orderRows.forEach(o=>{
+      const v=o.vendor||'Unknown';
+      if(!map[v])map[v]={vendor:v,orders:[],totalPlaced:0,totalReceived:0,totalPending:0,totalIssued:0,skus:new Set(),clients:new Set()};
+      map[v].orders.push(o);
+      map[v].totalPlaced+=safeNum(o.orderQtyPCS);
+      map[v].totalReceived+=safeNum(o.receivedPCS);
+      map[v].totalPending+=safeNum(o.pendingFG);
+      map[v].totalIssued+=safeNum(o.issuedKG);
+      map[v].skus.add(o.sku);
+      map[v].clients.add(o.client);
+    });
+    return Object.values(map).map(v=>({...v,skus:Array.from(v.skus),clients:Array.from(v.clients),progress:v.totalPlaced?v.totalReceived/v.totalPlaced*100:0})).sort((a,b)=>b.totalPending-a.totalPending);
+  },[metrics.orderRows]);
+
+  const allVendors=['All',...vendorSummary.map(v=>v.vendor)];
+  const filteredOrders=vendorFilter==='All'?metrics.orderRows:metrics.orderRows.filter(o=>o.vendor===vendorFilter);
+
   const cols=[
     {key:'id',label:'Order',render:o=><button className="btn ghost" onClick={()=>setSelected(o)}><span className="blue-t num">{o.id}</span></button>},
     {key:'vendor',label:'Vendor / Client',render:o=><><b>{o.vendor}</b><br/><span className="tiny">Client: {o.client}</span></>},
@@ -592,16 +630,107 @@ function OrdersPage({skus,vendors,clients,orders,setOrders,receipts,setReceipts,
     {key:'status',label:'Status',render:o=><StatusBadge status={o.status} pendingFG={o.pendingFG}/>},
     {key:'actions',label:'Actions',render:o=><div className="actions"><Button variant="outline" onClick={()=>setModal({type:'edit',order:o})}>Edit</Button><Button variant="secondary" onClick={()=>setModal({type:'receipt',order:o})}>FG Receipt</Button><Button variant="blue" onClick={()=>setModal({type:'dispatch',order:o})}>Dispatch</Button></div>},
   ];
+
   return <>
-    <PageHead title="Vendor Order Management" sub="Monitor vendor orders, date-wise receive plan, production progress and pending FG">
+    <PageHead title="Vendor Order Management" sub="Monitor vendor orders, production progress and pending FG">
       <Button variant="primary" onClick={()=>setModal({type:'new'})}>+ New Vendor Order</Button>
     </PageHead>
-    <DataTable columns={cols} data={metrics.orderRows} searchText="Search order, vendor, client, SKU..." />
-    {modal?.type==='new'&&<OrderForm skus={skus} vendors={vendors} clients={clients} onSave={saveOrder} onClose={()=>setModal(null)}/>} 
-    {modal?.type==='edit'&&<OrderForm skus={skus} vendors={vendors} clients={clients} initial={modal.order} initialSplits={vendorSplits.filter(x=>x.vendorOrderId===modal.order.id)} onSave={saveOrder} onClose={()=>setModal(null)}/>} 
-    {modal?.type==='receipt'&&<ReceiptForm order={modal.order} skus={skus} onSave={saveReceipt} onClose={()=>setModal(null)}/>} 
-    {modal?.type==='dispatch'&&<DispatchForm order={modal.order} skus={skus} clients={clients} onSave={saveDispatch} onClose={()=>setModal(null)}/>} 
-    {selected&&<OrderDetail order={selected} metrics={metrics} skus={skus} onClose={()=>setSelected(null)}/>} 
+
+    {/* View toggle + vendor filter */}
+    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12,flexWrap:'wrap',gap:8}}>
+      <div className="tabs" style={{padding:3}}>
+        <button className={view==='vendor'?'active':''} style={{padding:'5px 12px',fontSize:12}} onClick={()=>setView('vendor')}>🏭 Vendor Summary</button>
+        <button className={view==='orders'?'active':''} style={{padding:'5px 12px',fontSize:12}} onClick={()=>setView('orders')}>📋 All Orders</button>
+      </div>
+      {view==='orders'&&<div style={{display:'flex',alignItems:'center',gap:8}}>
+        <span style={{fontSize:11,fontWeight:700,color:'#64748b'}}>Filter vendor:</span>
+        <select className="sel" style={{width:180,height:30,padding:'4px 8px',fontSize:12,borderRadius:7}} value={vendorFilter} onChange={e=>setVendorFilter(e.target.value)}>
+          {allVendors.map(v=><option key={v}>{v}</option>)}
+        </select>
+      </div>}
+    </div>
+
+    {/* VENDOR SUMMARY VIEW */}
+    {view==='vendor'&&<div style={{display:'flex',flexDirection:'column',gap:10}}>
+      {vendorSummary.map(v=>{
+        const activeOrders=v.orders.filter(o=>!['Closed','Cancelled'].includes(o.status));
+        const closedOrders=v.orders.filter(o=>o.status==='Closed');
+        return <div key={v.vendor} style={{background:'#fff',border:'1px solid #e2e8f0',borderRadius:12,overflow:'hidden',boxShadow:'0 1px 4px rgba(15,23,42,.05)'}}>
+          {/* Vendor header */}
+          <div style={{background:'#f8fafc',borderBottom:'1px solid #e2e8f0',padding:'10px 16px',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:8}}>
+            <div style={{display:'flex',alignItems:'center',gap:12}}>
+              <div style={{width:36,height:36,borderRadius:9,background:'#6366f1',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,flexShrink:0}}>🏭</div>
+              <div>
+                <div style={{fontFamily:"'Sora',sans-serif",fontSize:15,fontWeight:800,color:'#0f172a'}}>{v.vendor}</div>
+                <div style={{fontSize:10,color:'#64748b',marginTop:1}}>{v.skus.join(' · ')} &nbsp;·&nbsp; {v.orders.length} orders &nbsp;·&nbsp; {activeOrders.length} active</div>
+              </div>
+            </div>
+            {/* Vendor KPI strip */}
+            <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+              {[
+                {label:'Placed',val:fN(v.totalPlaced),unit:'PCS',c:'#475569',bg:'#f1f5f9'},
+                {label:'Received',val:fN(v.totalReceived),unit:'PCS',c:'#059669',bg:'#f0fdf4'},
+                {label:'Pending FG',val:fN(v.totalPending),unit:'PCS',c:v.totalPending>0?'#d97706':'#059669',bg:v.totalPending>0?'#fffbeb':'#f0fdf4'},
+                {label:'RM Issued',val:fN(v.totalIssued),unit:'KG',c:'#7c3aed',bg:'#f5f3ff'},
+              ].map(k=><div key={k.label} style={{background:k.bg,borderRadius:8,padding:'5px 10px',minWidth:90,textAlign:'center'}}>
+                <div style={{fontSize:8,fontWeight:900,textTransform:'uppercase',color:'#94a3b8',letterSpacing:.4}}>{k.label}</div>
+                <div style={{fontFamily:"'Sora',sans-serif",fontSize:14,fontWeight:800,color:k.c,lineHeight:1.2}}>{k.val}</div>
+                <div style={{fontSize:8,color:'#94a3b8',fontWeight:700}}>{k.unit}</div>
+              </div>)}
+              <div style={{background:'#f1f5f9',borderRadius:8,padding:'5px 10px',minWidth:90,textAlign:'center'}}>
+                <div style={{fontSize:8,fontWeight:900,textTransform:'uppercase',color:'#94a3b8',letterSpacing:.4}}>Progress</div>
+                <div style={{fontFamily:"'Sora',sans-serif",fontSize:14,fontWeight:800,color:'#6366f1',lineHeight:1.2}}>{fN(v.progress,0)}%</div>
+                <div style={{height:4,background:'#e2e8f0',borderRadius:99,marginTop:4,overflow:'hidden'}}><div style={{height:'100%',width:`${v.progress}%`,background:'#6366f1',borderRadius:99}}></div></div>
+              </div>
+            </div>
+          </div>
+          {/* Order rows for this vendor */}
+          <div style={{overflowX:'auto'}}>
+            <table style={{width:'100%',borderCollapse:'collapse',fontSize:12}}>
+              <thead>
+                <tr style={{background:'#fafbfc'}}>
+                  {['Order','SKU','Type','Placed','RM Issued','Received','Pending FG','Progress','Delivery','Status','Actions'].map(h=><th key={h} style={{padding:'6px 12px',textAlign:'left',fontSize:10,fontWeight:900,textTransform:'uppercase',letterSpacing:.4,color:'#94a3b8',borderBottom:'1px solid #f1f5f9',whiteSpace:'nowrap'}}>{h}</th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {v.orders.map((o,i)=><tr key={o.id} style={{borderBottom:'1px solid #f8fafc',background:i%2===0?'#fff':'#fafbfc'}}
+                  onMouseEnter={e=>e.currentTarget.style.background='#f0f4ff'}
+                  onMouseLeave={e=>e.currentTarget.style.background=i%2===0?'#fff':'#fafbfc'}>
+                  <td style={{padding:'7px 12px'}}><button className="btn ghost" style={{padding:0,fontWeight:800,color:'#1d4ed8',fontSize:12}} onClick={()=>setSelected(o)}>{o.id}</button></td>
+                  <td style={{padding:'7px 12px'}}><span style={{fontWeight:700,fontSize:11}}>{o.sku}</span></td>
+                  <td style={{padding:'7px 12px'}}><span style={{fontSize:10,color:'#64748b'}}>{o.type||'—'}</span></td>
+                  <td style={{padding:'7px 12px'}}><span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,color:'#0f172a'}}>{fN(o.orderQtyPCS)}</span></td>
+                  <td style={{padding:'7px 12px'}}><span style={{fontFamily:"'Sora',sans-serif",fontWeight:700,color:'#7c3aed'}}>{fN(o.issuedKG)} KG</span></td>
+                  <td style={{padding:'7px 12px'}}><span style={{fontFamily:"'Sora',sans-serif",fontWeight:700,color:'#059669'}}>{fN(o.receivedPCS)}</span><div style={{fontSize:9,color:'#94a3b8'}}>{fN(o.receivedKG)} KG</div></td>
+                  <td style={{padding:'7px 12px'}}>
+                    <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,color:o.pendingFG>0?'#d97706':'#059669'}}>{fN(o.pendingFG)}</span>
+                    <Progress pct={o.progress} color={o.progress<40?'red':o.progress<80?'amber':'green'}/>
+                  </td>
+                  <td style={{padding:'7px 12px'}}><span style={{fontFamily:"'Sora',sans-serif",fontSize:12,fontWeight:700,color:'#6366f1'}}>{fN(o.progress,0)}%</span></td>
+                  <td style={{padding:'7px 12px',fontSize:11,color:'#64748b',whiteSpace:'nowrap'}}>{o.vendorDeliveryDate||'—'}</td>
+                  <td style={{padding:'7px 12px'}}><StatusBadge status={o.status} pendingFG={o.pendingFG}/></td>
+                  <td style={{padding:'7px 12px'}}>
+                    <div style={{display:'flex',gap:4}}>
+                      <Button variant="outline" onClick={()=>setModal({type:'edit',order:o})}>Edit</Button>
+                      <Button variant="secondary" onClick={()=>setModal({type:'receipt',order:o})}>Receipt</Button>
+                    </div>
+                  </td>
+                </tr>)}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      })}
+    </div>}
+
+    {/* ALL ORDERS VIEW */}
+    {view==='orders'&&<DataTable columns={cols} data={filteredOrders} searchText="Search order, vendor, client, SKU..." />}
+
+    {modal?.type==='new'&&<OrderForm skus={skus} vendors={vendors} clients={clients} onSave={saveOrder} onClose={()=>setModal(null)}/>}
+    {modal?.type==='edit'&&<OrderForm skus={skus} vendors={vendors} clients={clients} initial={modal.order} initialSplits={vendorSplits.filter(x=>x.vendorOrderId===modal.order.id)} onSave={saveOrder} onClose={()=>setModal(null)}/>}
+    {modal?.type==='receipt'&&<ReceiptForm order={modal.order} skus={skus} onSave={saveReceipt} onClose={()=>setModal(null)}/>}
+    {modal?.type==='dispatch'&&<DispatchForm order={modal.order} skus={skus} clients={clients} onSave={saveDispatch} onClose={()=>setModal(null)}/>}
+    {selected&&<OrderDetail order={selected} metrics={metrics} skus={skus} onClose={()=>setSelected(null)}/>}
   </>
 }
 function OrderDetail({order,metrics,skus,onClose}){
@@ -651,6 +780,8 @@ function CustomerOrderForm({skus,clients,initial,initialSplits=[],onSave,onClose
 
 function CustomerOrdersPage({skus,clients,customerOrders,setCustomerOrders,customerSplits,setCustomerSplits,dispatches,setDispatches,metrics}){
   const [modal,setModal]=useState(null); const [dispatchModal,setDispatchModal]=useState(null);
+  const [view,setView]=useState('client'); // 'client' | 'orders'
+  const [clientFilter,setClientFilter]=useState('All');
   const saveOrder=async(payload)=>{
     const row=payload.order; const orderId=row.id || genId('CO',customerOrders); const finalOrder={...row,id:orderId};
     if(row.id) setCustomerOrders(p=>p.map(o=>o.id===row.id?finalOrder:o)); else setCustomerOrders(p=>[{...finalOrder},...p]);
@@ -662,6 +793,26 @@ function CustomerOrdersPage({skus,clients,customerOrders,setCustomerOrders,custo
   };
   const saveDispatch=(row)=>{setDispatches(p=>[{...row,id:genId('D',p)},...p]);setDispatchModal(null)};
   const rows=metrics.customerOrderRows;
+
+  // Build client summary
+  const clientSummary=useMemo(()=>{
+    const map={};
+    rows.forEach(o=>{
+      const c=o.client||'Unknown';
+      if(!map[c])map[c]={client:c,orders:[],totalQty:0,dispatched:0,pending:0,orderValue:0,skus:new Set()};
+      map[c].orders.push(o);
+      map[c].totalQty+=safeNum(o.totalQtyPCS);
+      map[c].dispatched+=safeNum(o.dispatchedPCS);
+      map[c].pending+=safeNum(o.pendingDispatch);
+      map[c].orderValue+=safeNum(o.totalQtyPCS)*safeNum(o.sellPCS);
+      map[c].skus.add(o.sku);
+    });
+    return Object.values(map).map(c=>({...c,skus:Array.from(c.skus),progress:c.totalQty?c.dispatched/c.totalQty*100:0})).sort((a,b)=>b.pending-a.pending);
+  },[rows]);
+
+  const allClients=['All',...clientSummary.map(c=>c.client)];
+  const filteredOrders=clientFilter==='All'?rows:rows.filter(o=>o.client===clientFilter);
+
   const cols=[
     {key:'id',label:'Order',render:o=><span className="num blue-t">{o.id}</span>},
     {key:'client',label:'Client / SKU',render:o=><><b>{o.client}</b><br/><span className="tiny">{o.sku} · {o.orderRef}</span></>},
@@ -672,19 +823,114 @@ function CustomerOrdersPage({skus,clients,customerOrders,setCustomerOrders,custo
     {key:'status',label:'Status',render:o=><Badge color={o.status==='Closed'?'green':o.status==='Cancelled'?'red':'blue'}>{o.status||'Open'}</Badge>},
     {key:'actions',label:'Actions',render:o=><div className="actions"><Button variant="outline" onClick={()=>setModal(o)}>Edit</Button><Button variant="blue" onClick={()=>setDispatchModal({customerOrderId:o.id,client:o.client,sku:o.sku,qtyPCS:o.pendingDispatch,sellPCS:o.sellPCS,remarks:`Dispatch against ${o.id}`})} disabled={o.pendingDispatch<=0}>Dispatch</Button></div>},
   ];
+
   return <>
-    <PageHead title="Customer Orders" sub="Add customer order once, then break dispatch commitment date-wise. Example: 25,000 boxes split into 5,000 each.">
+    <PageHead title="Customer Orders" sub="Add customer order once, then break dispatch commitment date-wise.">
       <Button variant="primary" onClick={()=>setModal({})}>+ Add Customer Order</Button>
     </PageHead>
+
+    {/* KPI bar */}
     <div className="grid kpi-grid compact-kpi-grid" style={{gridTemplateColumns:'repeat(4,minmax(145px,1fr))'}}>
       <KPI label="Customer Order Qty" value={fN(metrics.totals.customerOrderQty)} sub="Total planned demand" icon="📋" color="blue"/>
       <KPI label="Dispatch Splits" value={metrics.totals.customerSplits} sub="Date-wise commitments" icon="🗓️" color="green"/>
       <KPI label="Pending Dispatch" value={fN(metrics.totals.customerPending)} sub="Order balance" icon="🚚" color="red"/>
       <KPI label="Dispatched Qty" value={fN(metrics.totals.dispatched)} sub="All dispatches" icon="✅" color="purple"/>
     </div>
-    <DataTable columns={cols} data={rows} searchText="Search customer order, client, SKU..." />
-    {modal&&<CustomerOrderForm skus={skus} clients={clients} initial={modal.id?modal:null} initialSplits={modal.id?customerSplits.filter(x=>x.customerOrderId===modal.id):[]} onSave={saveOrder} onClose={()=>setModal(null)}/>} 
-    {dispatchModal&&<DispatchForm initial={dispatchModal} skus={skus} clients={clients} onSave={saveDispatch} onClose={()=>setDispatchModal(null)}/>} 
+
+    {/* View toggle + client filter */}
+    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12,flexWrap:'wrap',gap:8}}>
+      <div className="tabs" style={{padding:3}}>
+        <button className={view==='client'?'active':''} style={{padding:'5px 12px',fontSize:12}} onClick={()=>setView('client')}>🏢 Client Summary</button>
+        <button className={view==='orders'?'active':''} style={{padding:'5px 12px',fontSize:12}} onClick={()=>setView('orders')}>📋 All Orders</button>
+      </div>
+      {view==='orders'&&<div style={{display:'flex',alignItems:'center',gap:8}}>
+        <span style={{fontSize:11,fontWeight:700,color:'#64748b'}}>Filter client:</span>
+        <select className="sel" style={{width:180,height:30,padding:'4px 8px',fontSize:12,borderRadius:7}} value={clientFilter} onChange={e=>setClientFilter(e.target.value)}>
+          {allClients.map(c=><option key={c}>{c}</option>)}
+        </select>
+      </div>}
+    </div>
+
+    {/* CLIENT SUMMARY VIEW */}
+    {view==='client'&&<div style={{display:'flex',flexDirection:'column',gap:10}}>
+      {clientSummary.map(c=>{
+        const activeOrders=c.orders.filter(o=>!['Closed','Cancelled'].includes(o.status));
+        return <div key={c.client} style={{background:'#fff',border:'1px solid #e2e8f0',borderRadius:12,overflow:'hidden',boxShadow:'0 1px 4px rgba(15,23,42,.05)'}}>
+          {/* Client header */}
+          <div style={{background:'#f8fafc',borderBottom:'1px solid #e2e8f0',padding:'10px 16px',display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:8}}>
+            <div style={{display:'flex',alignItems:'center',gap:12}}>
+              <div style={{width:36,height:36,borderRadius:9,background:'#059669',display:'flex',alignItems:'center',justifyContent:'center',fontSize:16,flexShrink:0}}>🏢</div>
+              <div>
+                <div style={{fontFamily:"'Sora',sans-serif",fontSize:15,fontWeight:800,color:'#0f172a'}}>{c.client}</div>
+                <div style={{fontSize:10,color:'#64748b',marginTop:1}}>{c.skus.join(' · ')} &nbsp;·&nbsp; {c.orders.length} orders &nbsp;·&nbsp; {activeOrders.length} active</div>
+              </div>
+            </div>
+            {/* Client KPI strip */}
+            <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+              {[
+                {label:'Order Qty',val:fN(c.totalQty),unit:'PCS',c:'#1d4ed8',bg:'#eff6ff'},
+                {label:'Dispatched',val:fN(c.dispatched),unit:'PCS',c:'#059669',bg:'#f0fdf4'},
+                {label:'Pending',val:fN(c.pending),unit:'PCS',c:c.pending>0?'#d97706':'#059669',bg:c.pending>0?'#fffbeb':'#f0fdf4'},
+                {label:'Order Value',val:fC(c.orderValue),unit:'',c:'#7c3aed',bg:'#f5f3ff'},
+              ].map(k=><div key={k.label} style={{background:k.bg,borderRadius:8,padding:'5px 10px',minWidth:90,textAlign:'center'}}>
+                <div style={{fontSize:8,fontWeight:900,textTransform:'uppercase',color:'#94a3b8',letterSpacing:.4}}>{k.label}</div>
+                <div style={{fontFamily:"'Sora',sans-serif",fontSize:14,fontWeight:800,color:k.c,lineHeight:1.2}}>{k.val}</div>
+                {k.unit&&<div style={{fontSize:8,color:'#94a3b8',fontWeight:700}}>{k.unit}</div>}
+              </div>)}
+              <div style={{background:'#f1f5f9',borderRadius:8,padding:'5px 10px',minWidth:90,textAlign:'center'}}>
+                <div style={{fontSize:8,fontWeight:900,textTransform:'uppercase',color:'#94a3b8',letterSpacing:.4}}>Progress</div>
+                <div style={{fontFamily:"'Sora',sans-serif",fontSize:14,fontWeight:800,color:'#059669',lineHeight:1.2}}>{fN(c.progress,0)}%</div>
+                <div style={{height:4,background:'#e2e8f0',borderRadius:99,marginTop:4,overflow:'hidden'}}><div style={{height:'100%',width:`${c.progress}%`,background:'#059669',borderRadius:99}}></div></div>
+              </div>
+            </div>
+          </div>
+          {/* Orders for this client */}
+          <div style={{overflowX:'auto'}}>
+            <table style={{width:'100%',borderCollapse:'collapse',fontSize:12}}>
+              <thead>
+                <tr style={{background:'#fafbfc'}}>
+                  {['Order','SKU','Order Ref','Order Qty','Dispatched','Pending','Progress','Dispatch Plan','Status','Actions'].map(h=><th key={h} style={{padding:'6px 12px',textAlign:'left',fontSize:10,fontWeight:900,textTransform:'uppercase',letterSpacing:.4,color:'#94a3b8',borderBottom:'1px solid #f1f5f9',whiteSpace:'nowrap'}}>{h}</th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {c.orders.map((o,i)=><tr key={o.id} style={{borderBottom:'1px solid #f8fafc',background:i%2===0?'#fff':'#fafbfc'}}
+                  onMouseEnter={e=>e.currentTarget.style.background='#f0fdf4'}
+                  onMouseLeave={e=>e.currentTarget.style.background=i%2===0?'#fff':'#fafbfc'}>
+                  <td style={{padding:'7px 12px'}}><span style={{fontWeight:800,color:'#1d4ed8',fontSize:12}}>{o.id}</span></td>
+                  <td style={{padding:'7px 12px'}}><span style={{fontWeight:700,fontSize:11}}>{o.sku}</span></td>
+                  <td style={{padding:'7px 12px',fontSize:11,color:'#64748b'}}>{o.orderRef||'—'}</td>
+                  <td style={{padding:'7px 12px'}}><span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,color:'#0f172a'}}>{fN(o.totalQtyPCS)}</span></td>
+                  <td style={{padding:'7px 12px'}}><span style={{fontFamily:"'Sora',sans-serif",fontWeight:700,color:'#059669'}}>{fN(o.dispatchedPCS)}</span></td>
+                  <td style={{padding:'7px 12px'}}>
+                    <span style={{fontFamily:"'Sora',sans-serif",fontWeight:800,color:o.pendingDispatch>0?'#d97706':'#059669'}}>{fN(o.pendingDispatch)}</span>
+                    <Progress pct={o.progress} color={o.progress<40?'red':o.progress<85?'amber':'green'}/>
+                  </td>
+                  <td style={{padding:'7px 12px'}}><span style={{fontFamily:"'Sora',sans-serif",fontSize:12,fontWeight:700,color:'#059669'}}>{fN(o.progress,0)}%</span></td>
+                  <td style={{padding:'7px 12px'}}>
+                    <div style={{display:'flex',flexWrap:'wrap',gap:3}}>
+                      {o.splits?.length?o.splits.map(sp=><button key={sp.id} onClick={()=>sp.pendingPCS>0&&setDispatchModal({date:sp.date,customerOrderId:o.id,customerSplitId:sp.id,client:o.client,sku:o.sku,qtyPCS:sp.pendingPCS,sellPCS:o.sellPCS,remarks:`Dispatch against ${sp.id}`})} style={{background:sp.pendingPCS>0?'#dcfce7':'#f1f5f9',color:sp.pendingPCS>0?'#166534':'#94a3b8',border:`1px solid ${sp.pendingPCS>0?'#86efac':'#e2e8f0'}`,borderRadius:4,padding:'1px 5px',fontSize:9,fontWeight:700,cursor:sp.pendingPCS>0?'pointer':'default'}}>{sp.date}: {fN(sp.qtyPCS)}</button>):<span style={{fontSize:10,color:'#94a3b8'}}>No splits</span>}
+                    </div>
+                  </td>
+                  <td style={{padding:'7px 12px'}}><Badge color={o.status==='Closed'?'green':o.status==='Cancelled'?'red':'blue'}>{o.status||'Open'}</Badge></td>
+                  <td style={{padding:'7px 12px'}}>
+                    <div style={{display:'flex',gap:4}}>
+                      <Button variant="outline" onClick={()=>setModal(o)}>Edit</Button>
+                      <Button variant="blue" onClick={()=>setDispatchModal({customerOrderId:o.id,client:o.client,sku:o.sku,qtyPCS:o.pendingDispatch,sellPCS:o.sellPCS,remarks:`Dispatch against ${o.id}`})} disabled={o.pendingDispatch<=0}>Dispatch</Button>
+                    </div>
+                  </td>
+                </tr>)}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      })}
+    </div>}
+
+    {/* ALL ORDERS VIEW */}
+    {view==='orders'&&<DataTable columns={cols} data={filteredOrders} searchText="Search customer order, client, SKU..." />}
+
+    {modal&&<CustomerOrderForm skus={skus} clients={clients} initial={modal.id?modal:null} initialSplits={modal.id?customerSplits.filter(x=>x.customerOrderId===modal.id):[]} onSave={saveOrder} onClose={()=>setModal(null)}/>}
+    {dispatchModal&&<DispatchForm initial={dispatchModal} skus={skus} clients={clients} onSave={saveDispatch} onClose={()=>setDispatchModal(null)}/>}
   </>
 }
 
@@ -734,44 +980,132 @@ function InventoryPage({skus,setSkus,vendors,rmOrders,setRmOrders,metrics}){
   const [selectedOrder,setSelectedOrder]=useState(null);
   const [selectedRM,setSelectedRM]=useState(null);
   const [rmModal,setRmModal]=useState(null);
+  const [skuFilter,setSkuFilter]=useState('All');
   const setDaily=(id,val)=>setSkus(p=>p.map(s=>s.id===id?{...s,dailyUse:val}:s));
   const setOpening=(id,val)=>setSkus(p=>p.map(s=>s.id===id?{...s,openingStockPCS:val}:s));
   const saveRMOrder=(row)=>{ if(row.id){setRmOrders(p=>p.map(r=>r.id===row.id?row:r))} else {setRmOrders(p=>[{...row,id:genId('M',p)},...p])} setRmModal(null); setSelectedRM(null); };
   const {totals,skuRows,orderRows}=metrics;
-  const prodForSku=(sku)=>orderRows.filter(o=>o.sku===sku.name && !['Closed','Cancelled'].includes(o.status));
-  const cols=[
-    {key:'sku',label:'SKU / Client',render:s=><><b>{s.name}</b><br/><span className="tiny">{s.client} · {s.ply} · {s.size}</span></>},
-    {key:'stock',label:'Stock I Have',render:s=><><input className="inp" style={{width:110}} type="number" value={s.openingStockPCS} onChange={e=>setOpening(s.id,e.target.value)}/><br/><span className="tiny">Live FG: <b className="green-t">{fN(s.onHandPCS)}</b> PCS</span></>},
-    {key:'millrm',label:'RM Order to Mills',render:s=><div style={{minWidth:190}}>{s.rmLines?.length?s.rmLines.map(r=><button key={r.id} onClick={()=>setSelectedRM(r)} className={`badge ${r.status==='Received'?'green':'amber'}`} style={{border:0,margin:'0 4px 4px 0'}}>{r.id}: {fN(r.rmForBoxes)} · {r.vendor}</button>):<Badge color="gray">No RM order</Badge>}<br/><button className="btn ghost" style={{padding:'3px 0',fontSize:11}} onClick={()=>setRmModal({sku:s.name,buyKG:s.buyKG})}>+ Add RM for this SKU</button></div>},
-    {key:'placed',label:'In Production',render:s=>{const list=prodForSku(s);return <div style={{minWidth:200}}>{list.length?list.map(o=><button key={o.id} onClick={()=>setSelectedOrder(o)} className="badge amber" style={{border:0,margin:'0 4px 4px 0'}}>{o.id}: {fN(o.pendingFG)} PCS · {o.vendor}</button>):<Badge color="gray">No active production</Badge>}<br/><span className="tiny">Placed to make: <b className="amber-t">{fN(s.placedPCS)}</b> PCS</span></div>}},
-    {key:'orders',label:'Total Orders',render:s=>{
-      const totalOrd=metrics.customerOrderRows.filter(co=>co.sku===s.name&&co.status!=='Cancelled').reduce((a,co)=>a+safeNum(co.totalQtyPCS),0);
-      const pendDisp=metrics.customerOrderRows.filter(co=>co.sku===s.name&&co.status!=='Cancelled').reduce((a,co)=>a+safeNum(co.pendingDispatch),0);
-      return <><span className="num blue-t">{fN(totalOrd)} PCS</span><br/><span className={`tiny ${pendDisp>0?'red-t':'green-t'}`}>Pending: {fN(pendDisp)} PCS</span></>
-    }},
-    {key:'daily',label:'Daily Use',render:s=><><input className="inp" style={{width:85}} type="number" value={s.dailyUse} onChange={e=>setDaily(s.id,e.target.value)}/><br/><span className="tiny">PCS/day</span></>},
-    {key:'safety',label:'7-Day Need',render:s=><><span className="num">{fN(s.safety)} PCS</span><br/><span className={`tiny ${s.gap<0?'red-t':'green-t'}`}>{s.gap<0?`Short ${fN(Math.abs(s.gap))}`:`Free ${fN(s.gap)}`}</span></>},
-    {key:'coverdays',label:'Days Cover',render:s=><><span className={`num ${s.days<7?'red-t':'green-t'}`}>{fN(s.days,1)} days</span><br/><span className="tiny">+Prod: {fN(s.totalCover,1)} days</span><br/><span className="tiny">+RM: {fN(s.futureCover,1)} days</span></>},
-    {key:'pending',label:'Dispatch Pending',render:s=><span className={`num ${s.pendingDispatchPCS>0?'red-t':'green-t'}`}>{fN(s.pendingDispatchPCS)} PCS</span>},
-    {key:'status',label:'Status',render:s=><Badge color={s.color}>{s.alert}</Badge>},
-  ];
+  const prodForSku=(s)=>orderRows.filter(o=>o.sku===s.name && !['Closed','Cancelled'].includes(o.status));
+  const filteredSkuRows=skuFilter==='All'?skuRows:skuRows.filter(s=>s.name===skuFilter);
+
+  const statusStyle=(color)=>({
+    red:{bg:'#fef2f2',border:'#fca5a5',badge:'#ef4444',badgeBg:'#fee2e2',badgeText:'#991b1b'},
+    amber:{bg:'#fffbeb',border:'#fcd34d',badge:'#d97706',badgeBg:'#fef3c7',badgeText:'#92400e'},
+    green:{bg:'#f0fdf4',border:'#86efac',badge:'#16a34a',badgeBg:'#dcfce7',badgeText:'#14532d'},
+  }[color]||{bg:'#f8fafc',border:'#e2e8f0',badge:'#64748b',badgeBg:'#f1f5f9',badgeText:'#334155'});
+
   return <>
-    <PageHead title="Inventory Control" sub="Stock I have · In production · 7-day need · Total orders · Days cover">
-      <Button variant="secondary" onClick={()=>exportCSV([...skuRows],'inventory_control.csv')}>⬇ Export Inventory</Button>
+    <PageHead title="Inventory Control" sub="Per-SKU health · Stock · Production · Orders · Days cover">
+      <select className="sel" style={{width:180,height:30,padding:'4px 8px',fontSize:12,borderRadius:7}} value={skuFilter} onChange={e=>setSkuFilter(e.target.value)}>
+        <option value="All">All SKUs</option>
+        {skuRows.map(s=><option key={s.id} value={s.name}>{s.name}</option>)}
+      </select>
+      <Button variant="secondary" onClick={()=>exportCSV([...skuRows],'inventory_control.csv')}>⬇ Export</Button>
       <Button variant="primary" onClick={()=>setRmModal({})}>+ Add Mill RM Order</Button>
     </PageHead>
-    <div className="grid kpi-grid compact-kpi-grid" style={{gridTemplateColumns:'repeat(6,minmax(130px,1fr))'}}>
-      <KPI label="In Stock" value={fN(totals.onHand)} sub="Live FG across all SKUs" icon="📦" color="green"/>
-      <KPI label="In Production" value={fN(totals.placed)} sub="Pending FG from vendors" icon="🏭" color="amber"/>
-      <KPI label="RM Pipeline" value={fN(totals.rmPendingBoxes)} sub="Boxes RM ordered from mills" icon="🧻" color="purple"/>
-      <KPI label="Total Available" value={fN(totals.available)} sub="Stock + production" icon="📊" color="blue"/>
-      <KPI label="Orders Pending" value={fN(totals.customerPending)} sub="Customer dispatch balance" icon="🚚" color="red"/>
-      <KPI label="Daily Use" value={fN(totals.daily)} sub="PCS/day total" icon="📉"/>
+
+    {/* KPI bar */}
+    <div style={{display:'grid',gridTemplateColumns:'repeat(6,1fr)',gap:6,marginBottom:12}}>
+      {[
+        {label:'In Stock',val:fN(totals.onHand),sub:'Live FG',icon:'📦',c:'green'},
+        {label:'In Production',val:fN(totals.placed),sub:'Pending from vendors',icon:'🏭',c:'amber'},
+        {label:'RM Pipeline',val:fN(totals.rmPendingBoxes),sub:'Boxes at mills',icon:'🧻',c:'purple'},
+        {label:'Total Available',val:fN(totals.available),sub:'Stock + prod',icon:'📊',c:'blue'},
+        {label:'Orders Pending',val:fN(totals.customerPending),sub:'To dispatch',icon:'🚚',c:'red'},
+        {label:'Daily Use',val:fN(totals.daily),sub:'PCS/day',icon:'📉',c:''},
+      ].map(k=><div key={k.label} className={`kpi compact-kpi-grid ${k.c}`} style={{padding:'9px 12px',borderRadius:10}}>
+        <div className="top"><div><label style={{fontSize:9}}>{k.label}</label><strong style={{fontSize:15}}>{k.val}</strong><small>{k.sub}</small></div><div className="icon" style={{fontSize:18}}>{k.icon}</div></div>
+      </div>)}
     </div>
-    <Card title="Inventory + Mill RM + Production Pipeline"><DataTable columns={cols} data={skuRows} searchText="Search SKU, client, vendor, mill RM..." /></Card>
-    {rmModal&&<RMOrderForm skus={skus} vendors={vendors} initial={rmModal.id?rmModal:rmModal} onSave={saveRMOrder} onClose={()=>setRmModal(null)}/>} 
-    {selectedRM&&<RMOrderDetail rm={selectedRM} onEdit={(r)=>{setSelectedRM(null);setRmModal(r)}} onClose={()=>setSelectedRM(null)}/>} 
-    {selectedOrder&&<OrderDetail order={selectedOrder} metrics={metrics} skus={skus} onClose={()=>setSelectedOrder(null)}/>} 
+
+    {/* SKU Cards */}
+    <div style={{display:'flex',flexDirection:'column',gap:8}}>
+      {filteredSkuRows.map(s=>{
+        const st=statusStyle(s.color);
+        const prod=prodForSku(s);
+        const totalOrd=metrics.customerOrderRows.filter(co=>co.sku===s.name&&co.status!=='Cancelled').reduce((a,co)=>a+safeNum(co.totalQtyPCS),0);
+        const pendDisp=metrics.customerOrderRows.filter(co=>co.sku===s.name&&co.status!=='Cancelled').reduce((a,co)=>a+safeNum(co.pendingDispatch),0);
+        const need7=safeNum(s.dailyUse)*7;
+        const stockW=need7>0?Math.min(100,s.onHandPCS/need7*100):100;
+        const prodW=need7>0?Math.min(100,(s.onHandPCS+s.placedPCS)/need7*100):100;
+        return <div key={s.id} style={{background:st.bg,border:`1px solid ${st.border}`,borderRadius:12,padding:'12px 14px',display:'grid',gridTemplateColumns:'180px 1fr 1fr 1fr 1fr 1fr 1fr',gap:10,alignItems:'center'}}>
+
+          {/* Col 1: SKU identity */}
+          <div>
+            <div style={{fontFamily:"'Sora',sans-serif",fontSize:13,fontWeight:800,color:'#0f172a',marginBottom:2}}>{s.name}</div>
+            <div style={{fontSize:10,color:'#64748b',fontWeight:600,marginBottom:6}}>{s.client} · {s.ply}</div>
+            <span style={{background:st.badgeBg,color:st.badgeText,fontSize:9,fontWeight:900,textTransform:'uppercase',padding:'2px 7px',borderRadius:99,letterSpacing:.3}}>{s.alert}</span>
+          </div>
+
+          {/* Col 2: Stock */}
+          <div style={{background:'rgba(255,255,255,.65)',borderRadius:9,padding:'8px 10px'}}>
+            <div style={{fontSize:9,fontWeight:900,textTransform:'uppercase',color:'#94a3b8',letterSpacing:.4,marginBottom:3}}>📦 In Stock</div>
+            <div style={{fontFamily:"'Sora',sans-serif",fontSize:18,fontWeight:800,color:'#059669',lineHeight:1}}>{fN(s.onHandPCS)}</div>
+            <div style={{fontSize:9,color:'#94a3b8',marginTop:3}}>PCS live</div>
+            <input className="inp" style={{width:'100%',marginTop:6,padding:'3px 6px',fontSize:11,height:24,borderRadius:5}} type="number" value={s.openingStockPCS} onChange={e=>setOpening(s.id,e.target.value)} title="Opening stock"/>
+            <div style={{fontSize:9,color:'#94a3b8',marginTop:2}}>Opening stock</div>
+          </div>
+
+          {/* Col 3: In Production */}
+          <div style={{background:'rgba(255,255,255,.65)',borderRadius:9,padding:'8px 10px'}}>
+            <div style={{fontSize:9,fontWeight:900,textTransform:'uppercase',color:'#94a3b8',letterSpacing:.4,marginBottom:3}}>🏭 In Production</div>
+            <div style={{fontFamily:"'Sora',sans-serif",fontSize:18,fontWeight:800,color:'#d97706',lineHeight:1}}>{fN(s.placedPCS)}</div>
+            <div style={{fontSize:9,color:'#94a3b8',marginTop:3}}>{prod.length} order{prod.length!==1?'s':''}</div>
+            <div style={{marginTop:5,display:'flex',flexWrap:'wrap',gap:3}}>
+              {prod.map(o=><button key={o.id} onClick={()=>setSelectedOrder(o)} style={{background:'#fef3c7',color:'#92400e',border:'1px solid #fcd34d',borderRadius:4,padding:'1px 5px',fontSize:9,fontWeight:700,cursor:'pointer'}}>{o.id}: {fN(o.pendingFG)}</button>)}
+            </div>
+          </div>
+
+          {/* Col 4: Total Orders */}
+          <div style={{background:'rgba(255,255,255,.65)',borderRadius:9,padding:'8px 10px'}}>
+            <div style={{fontSize:9,fontWeight:900,textTransform:'uppercase',color:'#94a3b8',letterSpacing:.4,marginBottom:3}}>📋 Orders</div>
+            <div style={{fontFamily:"'Sora',sans-serif",fontSize:18,fontWeight:800,color:'#1d4ed8',lineHeight:1}}>{fN(totalOrd)}</div>
+            <div style={{fontSize:9,color:'#94a3b8',marginTop:3}}>Total demand</div>
+            <div style={{fontFamily:"'Sora',sans-serif",fontSize:13,fontWeight:800,color:pendDisp>0?'#ef4444':'#16a34a',marginTop:4}}>{fN(pendDisp)} PCS</div>
+            <div style={{fontSize:9,color:'#94a3b8'}}>Pending dispatch</div>
+          </div>
+
+          {/* Col 5: 7-Day Need + Daily */}
+          <div style={{background:'rgba(255,255,255,.65)',borderRadius:9,padding:'8px 10px'}}>
+            <div style={{fontSize:9,fontWeight:900,textTransform:'uppercase',color:'#94a3b8',letterSpacing:.4,marginBottom:3}}>📅 7-Day Need</div>
+            <div style={{fontFamily:"'Sora',sans-serif",fontSize:18,fontWeight:800,color:'#475569',lineHeight:1}}>{fN(s.safety)}</div>
+            <div style={{fontSize:9,color:'#94a3b8',marginTop:3}}>PCS required</div>
+            <div style={{display:'flex',alignItems:'center',gap:4,marginTop:6}}>
+              <input className="inp" style={{flex:1,padding:'3px 5px',fontSize:11,height:24,borderRadius:5}} type="number" value={s.dailyUse} onChange={e=>setDaily(s.id,e.target.value)} title="Daily use"/>
+              <span style={{fontSize:9,color:'#94a3b8',fontWeight:700,whiteSpace:'nowrap'}}>PCS/day</span>
+            </div>
+          </div>
+
+          {/* Col 6: Days Cover bar */}
+          <div style={{background:'rgba(255,255,255,.65)',borderRadius:9,padding:'8px 10px'}}>
+            <div style={{fontSize:9,fontWeight:900,textTransform:'uppercase',color:'#94a3b8',letterSpacing:.4,marginBottom:3}}>⏱ Days Cover</div>
+            <div style={{fontFamily:"'Sora',sans-serif",fontSize:18,fontWeight:800,color:s.days<7?'#ef4444':s.days<14?'#d97706':'#16a34a',lineHeight:1}}>{fN(s.days,1)}</div>
+            <div style={{fontSize:9,color:'#94a3b8',marginTop:3}}>days stock</div>
+            <div style={{height:5,background:'#e2e8f0',borderRadius:99,marginTop:6,overflow:'hidden',position:'relative'}}>
+              <div style={{position:'absolute',left:0,top:0,height:'100%',width:`${stockW}%`,background:s.color==='red'?'#ef4444':s.color==='amber'?'#f59e0b':'#22c55e',borderRadius:99}}></div>
+              {prodW>stockW&&<div style={{position:'absolute',left:`${stockW}%`,top:0,height:'100%',width:`${prodW-stockW}%`,background:'#fde68a',borderRadius:99}}></div>}
+            </div>
+            <div style={{display:'flex',justifyContent:'space-between',marginTop:3}}>
+              <span style={{fontSize:8,color:'#94a3b8'}}>+Prod: {fN(s.totalCover,1)}d</span>
+              <span style={{fontSize:8,color:'#94a3b8'}}>+RM: {fN(s.futureCover,1)}d</span>
+            </div>
+          </div>
+
+          {/* Col 7: RM + actions */}
+          <div style={{background:'rgba(255,255,255,.65)',borderRadius:9,padding:'8px 10px'}}>
+            <div style={{fontSize:9,fontWeight:900,textTransform:'uppercase',color:'#94a3b8',letterSpacing:.4,marginBottom:3}}>🧻 Mill RM</div>
+            {s.rmLines?.length?<div style={{display:'flex',flexWrap:'wrap',gap:3,marginBottom:4}}>
+              {s.rmLines.map(r=><button key={r.id} onClick={()=>setSelectedRM(r)} style={{background:r.status==='Received'?'#dcfce7':'#fef3c7',color:r.status==='Received'?'#166534':'#92400e',border:`1px solid ${r.status==='Received'?'#86efac':'#fcd34d'}`,borderRadius:4,padding:'1px 5px',fontSize:9,fontWeight:700,cursor:'pointer'}}>{r.id}: {fN(r.rmForBoxes)}</button>)}
+            </div>:<div style={{fontSize:9,color:'#cbd5e1',fontWeight:700,marginBottom:4}}>No RM order</div>}
+            <button onClick={()=>setRmModal({sku:s.name,buyKG:s.buyKG})} style={{background:'#6366f1',color:'#fff',border:0,borderRadius:5,padding:'3px 8px',fontSize:9,fontWeight:800,cursor:'pointer',width:'100%'}}>+ Add RM</button>
+          </div>
+        </div>
+      })}
+    </div>
+
+    {rmModal&&<RMOrderForm skus={skus} vendors={vendors} initial={rmModal.id?rmModal:rmModal} onSave={saveRMOrder} onClose={()=>setRmModal(null)}/>}
+    {selectedRM&&<RMOrderDetail rm={selectedRM} onEdit={(r)=>{setSelectedRM(null);setRmModal(r)}} onClose={()=>setSelectedRM(null)}/>}
+    {selectedOrder&&<OrderDetail order={selectedOrder} metrics={metrics} skus={skus} onClose={()=>setSelectedOrder(null)}/>}
   </>
 }
 
@@ -871,22 +1205,35 @@ function CalendarPage({metrics}){
   const isWeekend=(iso)=>{const wd=parseISO(iso).getDay();return wd===0||wd===6};
   const isMon=(iso)=>parseISO(iso).getDay()===1;
   const pretty=(iso)=>parseISO(iso).toLocaleDateString('en-IN',{day:'2-digit',month:'short'});
+  const prettyFull=(iso)=>parseISO(iso).toLocaleDateString('en-IN',{day:'2-digit',month:'2-digit',year:'numeric'});
   const weekHdr=(iso)=>{const d=parseISO(iso);const e=new Date(d);e.setDate(d.getDate()+6);return `Week · ${d.toLocaleDateString('en-IN',{day:'2-digit',month:'short'})} – ${e.toLocaleDateString('en-IN',{day:'2-digit',month:'short'})}`};
   const today=todayISO();
   const sc=(s)=>{const sl=String(s||'').toLowerCase();if(sl==='planned')return 's-planned';if(sl==='pending')return 's-pending';if(sl.includes('confirm')||sl.includes('approved'))return 's-confirmed';return 's-default'};
 
   const [startDate,setStartDate]=useState(todayISO());
-  const [endDate,setEndDate]=useState(addDays(14));
   const [filter,setFilter]=useState('All');
+  const [skuFilter,setSkuFilter]=useState('All');
+  const [sortField,setSortField]=useState('date');
+  const [sortDir,setSortDir]=useState('asc');
   const [viewMode,setViewMode]=useState('grid');
   const [hideEmpty,setHideEmpty]=useState(false);
+  const [tableSearch,setTableSearch]=useState('');
 
+  // Always show exactly 15 days from startDate
   const dateList=useMemo(()=>{
-    const s=parseISO(startDate),se=parseISO(endDate||startDate),mx=parseISO(datePlus(startDate,14));
-    const fe=se<s?s:(se>mx?mx:se);
-    const out=[];const d=new Date(s);while(d<=fe){out.push(fmt(d));d.setDate(d.getDate()+1)}
+    const out=[];const d=new Date(parseISO(startDate));
+    for(let i=0;i<15;i++){out.push(fmt(d));d.setDate(d.getDate()+1)}
     return out;
-  },[startDate,endDate]);
+  },[startDate]);
+  const endDate=dateList[dateList.length-1];
+
+  const allSkus=useMemo(()=>{
+    const s=new Set();
+    metrics.vendorSplitRows.forEach(v=>s.add(v.sku));
+    metrics.customerSplitRows.forEach(c=>s.add(c.sku));
+    metrics.orderRows.forEach(o=>s.add(o.sku));
+    return ['All',...Array.from(s).filter(Boolean).sort()];
+  },[metrics]);
 
   const events=useMemo(()=>{
     const list=[];
@@ -899,13 +1246,12 @@ function CalendarPage({metrics}){
     return list;
   },[metrics.orderRows,metrics.customerSplitRows,metrics.vendorSplitRows]);
 
-  const visible=events.filter(e=>dateList.includes(e.date)&&(filter==='All'||e.type===filter)).sort((a,b)=>a.date.localeCompare(b.date)||a.kind.localeCompare(b.kind));
+  const visible=events.filter(e=>dateList.includes(e.date)&&(filter==='All'||e.type===filter)&&(skuFilter==='All'||e.sku===skuFilter)).sort((a,b)=>a.date.localeCompare(b.date)||a.kind.localeCompare(b.kind));
   const recPCS=visible.filter(e=>e.kind==='receive').reduce((a,e)=>a+safeNum(e.qty),0);
   const disPCS=visible.filter(e=>e.kind==='dispatch').reduce((a,e)=>a+safeNum(e.qty),0);
   const activeDays=dateList.filter(dt=>visible.some(e=>e.date===dt)).length;
   const shownDates=hideEmpty?dateList.filter(dt=>visible.some(e=>e.date===dt)):dateList;
 
-  // Group dates into week rows of 4
   const weeks=useMemo(()=>{
     const rows=[];let cur=[];
     shownDates.forEach((dt,i)=>{
@@ -916,25 +1262,81 @@ function CalendarPage({metrics}){
     return rows;
   },[shownDates]);
 
+  // ALL events (no date window filter) — used by SKU Plan to show complete data
+  const allEvents=useMemo(()=>{
+    const list=[];
+    const vs=metrics.vendorSplitRows.filter(v=>!['Cancelled','Received'].includes(v.status));
+    if(vs.length){vs.forEach(v=>list.push({date:v.date,kind:'receive',party:v.vendor,sku:v.sku,qty:safeNum(v.pendingPCS)||safeNum(v.qtyPCS),ref:v.vendorOrderId,status:v.status,type:'Receive from Vendor'}));}
+    else{metrics.orderRows.filter(o=>!['Cancelled','Closed'].includes(o.status)).forEach(o=>{const q=safeNum(o.pendingFG)||safeNum(o.expectedPCS)||safeNum(o.orderQtyPCS);if(o.vendorDeliveryDate&&q>0)list.push({date:o.vendorDeliveryDate,kind:'receive',party:o.vendor,sku:o.sku,qty:q,ref:o.id,status:o.status,type:'Receive from Vendor'});});}
+    const cs=metrics.customerSplitRows.filter(s=>!['Cancelled','Dispatched'].includes(s.status));
+    if(cs.length){cs.forEach(s=>list.push({date:s.date,kind:'dispatch',party:s.client,sku:s.sku,qty:safeNum(s.pendingPCS)||safeNum(s.qtyPCS),ref:s.customerOrderId,status:s.status,type:'Dispatch to Client'}));}
+    else{metrics.orderRows.filter(o=>!['Cancelled','Closed'].includes(o.status)).forEach(o=>{const q=safeNum(o.pendingDispatch)||safeNum(o.orderQtyPCS);if(o.clientDeliveryDate&&q>0)list.push({date:o.clientDeliveryDate,kind:'dispatch',party:o.client,sku:o.sku,qty:q,ref:o.id,status:'Pending',type:'Dispatch to Client'});});}
+    return list;
+  },[metrics.orderRows,metrics.customerSplitRows,metrics.vendorSplitRows]);
+
+  // ── SKU Plan table: all dates, one row per date+SKU ──
+  const skuPlanRows=useMemo(()=>{
+    const src=allEvents.filter(e=>(filter==='All'||e.type===filter)&&(skuFilter==='All'||e.sku===skuFilter));
+    const map={};
+    src.forEach(e=>{
+      const key=`${e.date}||${e.sku}`;
+      if(!map[key])map[key]={date:e.date,sku:e.sku,dispatch:0,receive:0,receiveFrom:new Set(),dispatchTo:new Set(),dispatchStatus:'',receiveStatus:''};
+      if(e.kind==='dispatch'){map[key].dispatch+=safeNum(e.qty);map[key].dispatchTo.add(e.party);map[key].dispatchStatus=e.status||''}
+      if(e.kind==='receive'){map[key].receive+=safeNum(e.qty);map[key].receiveFrom.add(e.party);map[key].receiveStatus=e.status||''}
+    });
+    let rows=Object.values(map).map(r=>({...r,receiveFrom:Array.from(r.receiveFrom).join(', '),dispatchTo:Array.from(r.dispatchTo).join(', ')}));
+    if(tableSearch)rows=rows.filter(r=>JSON.stringify(r).toLowerCase().includes(tableSearch.toLowerCase()));
+    rows.sort((a,b)=>{
+      let va=a[sortField]??'', vb=b[sortField]??'';
+      if(sortField==='dispatch'||sortField==='receive'){va=Number(va);vb=Number(vb)}
+      const cmp=va<vb?-1:va>vb?1:0;
+      return sortDir==='asc'?cmp:-cmp;
+    });
+    return rows;
+  },[allEvents,filter,skuFilter,sortField,sortDir,tableSearch]);
+
+  const toggleSort=(f)=>{if(sortField===f){setSortDir(d=>d==='asc'?'desc':'asc')}else{setSortField(f);setSortDir('asc')}};
+  const sortIcon=(f)=>sortField===f?(sortDir==='asc'?'▲':'▼'):'⇅';
+
+  const skuPlanCols=[
+    {key:'date',label:'Date'},
+    {key:'sku',label:'SKU'},
+    {key:'dispatch',label:'Dispatch (PCS)'},
+    {key:'receive',label:'Receive (PCS)'},
+    {key:'receiveFrom',label:'Receive From'},
+    {key:'dispatchTo',label:'Dispatch To'},
+    {key:'dispatchStatus',label:'Dispatch Status'},
+    {key:'receiveStatus',label:'Receive Status'},
+  ];
+
   return <div className="cal-page">
     {/* Title + controls */}
     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6,flexWrap:'wrap',gap:6}}>
       <div>
         <h2 style={{fontFamily:"'Sora',sans-serif",fontSize:17,fontWeight:800,letterSpacing:'-.4px',color:'#0f172a'}}>15-Day Delivery Planner</h2>
-        <p style={{fontSize:11,color:'#64748b',marginTop:1}}>{pretty(dateList[0])} → {pretty(dateList[dateList.length-1])} &nbsp;·&nbsp; {dateList.length} days &nbsp;·&nbsp; {activeDays} active</p>
+        <p style={{fontSize:11,color:'#64748b',marginTop:1}}>{viewMode==='skuplan'?'All planned delivery dates · full pipeline':'Grid: '+pretty(dateList[0])+' → '+pretty(endDate)+' · 15 days · '+activeDays+' active'}</p>
       </div>
       <div style={{display:'flex',gap:5,alignItems:'center',flexWrap:'wrap'}}>
-        <input className="inp" style={{width:120,padding:'4px 8px',fontSize:11,height:28,borderRadius:7}} type="date" value={startDate} onChange={e=>setStartDate(e.target.value)}/>
-        <input className="inp" style={{width:120,padding:'4px 8px',fontSize:11,height:28,borderRadius:7}} type="date" value={endDate} min={startDate} max={datePlus(startDate,14)} onChange={e=>setEndDate(e.target.value)}/>
-        <select className="sel" style={{width:160,padding:'4px 8px',fontSize:11,height:28,borderRadius:7}} value={filter} onChange={e=>setFilter(e.target.value)}><option>All</option><option>Receive from Vendor</option><option>Dispatch to Client</option></select>
-        <button className="btn secondary" style={{fontSize:11,padding:'4px 9px',height:28,borderRadius:7}} onClick={()=>{setStartDate(todayISO());setEndDate(addDays(14))}}>↺ Today</button>
-        <button className="btn secondary" style={{fontSize:11,padding:'4px 9px',height:28,borderRadius:7}} onClick={()=>exportCSV(visible,'delivery_plan.csv')}>⬇ CSV</button>
+        {/* Single start-date picker — end date auto = start + 15 */}
+        <div style={{display:'flex',alignItems:'center',gap:5,background:'#f1f5f9',border:'1px solid #e2e8f0',borderRadius:8,padding:'3px 8px'}}>
+          <span style={{fontSize:10,fontWeight:800,color:'#64748b',whiteSpace:'nowrap'}}>From</span>
+          <input className="inp" style={{width:118,padding:'2px 6px',fontSize:11,height:24,borderRadius:5,border:'none',background:'transparent'}} type="date" value={startDate} onChange={e=>setStartDate(e.target.value)}/>
+          <span style={{fontSize:10,fontWeight:700,color:'#94a3b8'}}>→ +15 days</span>
+        </div>
+        <select className="sel" style={{width:155,padding:'4px 8px',fontSize:11,height:28,borderRadius:7}} value={filter} onChange={e=>setFilter(e.target.value)}>
+          <option>All</option><option>Receive from Vendor</option><option>Dispatch to Client</option>
+        </select>
+        <select className="sel" style={{width:145,padding:'4px 8px',fontSize:11,height:28,borderRadius:7}} value={skuFilter} onChange={e=>setSkuFilter(e.target.value)}>
+          {allSkus.map(s=><option key={s}>{s}</option>)}
+        </select>
+        <button className="btn secondary" style={{fontSize:11,padding:'4px 9px',height:28,borderRadius:7}} onClick={()=>setStartDate(todayISO())}>↺ Today</button>
+        <button className="btn secondary" style={{fontSize:11,padding:'4px 9px',height:28,borderRadius:7}} onClick={()=>exportCSV(skuPlanRows,'delivery_plan.csv')}>⬇ CSV</button>
       </div>
     </div>
 
     {/* KPI strip */}
     <div className="cal-strip">
-      <div className="cal-strip-item"><span className="csi-icon">🗓️</span><div><div className="csi-label">Window</div><div className="csi-val cv-dark">{dateList.length} Days</div><div className="csi-sub">{activeDays} active · {dateList.length-activeDays} idle</div></div></div>
+      <div className="cal-strip-item"><span className="csi-icon">🗓️</span><div><div className="csi-label">Window</div><div className="csi-val cv-dark">15 Days</div><div className="csi-sub">{activeDays} active · {15-activeDays} idle</div></div></div>
       <div className="cal-strip-item"><span className="csi-icon">🚚</span><div><div className="csi-label">Outbound</div><div className="csi-val cv-green">{fN(disPCS)} PCS</div><div className="csi-sub">{visible.filter(e=>e.kind==='dispatch').length} client dispatches</div></div></div>
       <div className="cal-strip-item"><span className="csi-icon">📥</span><div><div className="csi-label">Inbound</div><div className="csi-val cv-blue">{fN(recPCS)} PCS</div><div className="csi-sub">{visible.filter(e=>e.kind==='receive').length} vendor shipments</div></div></div>
       <div className="cal-strip-item"><span className="csi-icon">📦</span><div><div className="csi-label">Total Movement</div><div className="csi-val cv-purple">{fN(recPCS+disPCS)} PCS</div><div className="csi-sub">{visible.length} events</div></div></div>
@@ -944,12 +1346,12 @@ function CalendarPage({metrics}){
     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:7,gap:8,flexWrap:'wrap'}}>
       <div className="tabs" style={{padding:3}}>
         <button className={viewMode==='grid'?'active':''} style={{padding:'4px 10px',fontSize:11}} onClick={()=>setViewMode('grid')}>📅 Grid</button>
-        <button className={viewMode==='table'?'active':''} style={{padding:'4px 10px',fontSize:11}} onClick={()=>setViewMode('table')}>📋 Table</button>
+        <button className={viewMode==='skuplan'?'active':''} style={{padding:'4px 10px',fontSize:11}} onClick={()=>setViewMode('skuplan')}>📊 SKU Plan</button>
       </div>
       <div style={{display:'flex',gap:10,alignItems:'center',flexWrap:'wrap'}}>
-        <label style={{display:'flex',alignItems:'center',gap:5,cursor:'pointer',userSelect:'none',fontSize:11,fontWeight:700,color:'#475569'}}>
+        {viewMode==='grid'&&<label style={{display:'flex',alignItems:'center',gap:5,cursor:'pointer',userSelect:'none',fontSize:11,fontWeight:700,color:'#475569'}}>
           <input type="checkbox" checked={hideEmpty} onChange={e=>setHideEmpty(e.target.checked)} style={{accentColor:'#6366f1',width:12,height:12}}/>Hide idle days
-        </label>
+        </label>}
         <span style={{fontSize:10,color:'#94a3b8',fontWeight:800,display:'flex',alignItems:'center',gap:4}}><span style={{width:9,height:9,borderRadius:'50%',background:'#059669',display:'inline-block'}}></span>Dispatch</span>
         <span style={{fontSize:10,color:'#94a3b8',fontWeight:800,display:'flex',alignItems:'center',gap:4}}><span style={{width:9,height:9,borderRadius:'50%',background:'#1d4ed8',display:'inline-block'}}></span>Receive</span>
         <span style={{fontSize:10,color:'#94a3b8',fontWeight:800,display:'flex',alignItems:'center',gap:4}}><span style={{width:8,height:8,borderRadius:2,background:'#6366f1',display:'inline-block'}}></span>Today</span>
@@ -970,7 +1372,6 @@ function CalendarPage({metrics}){
             const d=parseISO(dt);
             const isTd=dt===today,isWknd=isWeekend(dt);
             return <div key={dt} className={`cdc${isTd?' is-today':''}${isWknd?' is-weekend':''}${evs.length===0?' is-empty':''}`}>
-              {/* LEFT: date + dispatch */}
               <div className="cdc-left">
                 <div className="cdc-date-row">
                   <span className="cdc-num">{d.getDate()}</span>
@@ -992,7 +1393,6 @@ function CalendarPage({metrics}){
                   {e.party&&<div style={{fontSize:9,color:'#64748b',fontWeight:600}}>{e.party}{e.ref?<span style={{color:'#94a3b8'}}> · {e.ref}</span>:null}</div>}
                 </div>):<span className="cdc-empty">NO DISPATCHES</span>}
               </div>
-              {/* RIGHT: receive */}
               <div className="cdc-right">
                 <div className="cdc-recv-hdr">
                   <span className="cdc-recv-lbl">📥 Receive</span>
@@ -1014,16 +1414,95 @@ function CalendarPage({metrics}){
       {shownDates.length===0&&<div style={{textAlign:'center',padding:'32px',color:'#94a3b8',fontSize:13,fontWeight:700}}>No events in selected range</div>}
     </div>}
 
-    {/* Table view */}
-    {viewMode==='table'&&<DataTable columns={[
-      {key:'date',label:'Date',render:e=><span style={{fontWeight:800,color:e.date===today?'#6366f1':'#0f172a'}}>{pretty(e.date)} <span style={{fontSize:10,color:'#94a3b8',fontWeight:700}}>{parseISO(e.date).toLocaleDateString('en-IN',{weekday:'short'})}</span></span>},
-      {key:'type',label:'Type',render:e=><Badge color={e.kind==='receive'?'blue':'green'}>{e.kind==='receive'?'📥 Inbound':'🚚 Outbound'}</Badge>},
-      {key:'qty',label:'Qty',render:e=><span className={`num ${e.kind==='receive'?'blue-t':'green-t'}`}>{fN(e.qty)} PCS</span>},
-      {key:'sku',label:'SKU',render:e=><b style={{fontSize:12}}>{e.sku}</b>},
-      {key:'party',label:'Party',render:e=><span style={{fontSize:12,fontWeight:700}}>{e.party}</span>},
-      {key:'ref',label:'Ref',render:e=><span className="tiny blue-t">{e.ref}</span>},
-      {key:'status',label:'Status',render:e=><Badge color={String(e.status||'').toLowerCase()==='planned'?'amber':String(e.status||'').toLowerCase()==='pending'?'blue':String(e.status||'').toLowerCase().includes('confirm')?'green':'gray'}>{e.status||'—'}</Badge>}
-    ]} data={visible} searchText="Search delivery plan..."/>}
+    {/* SKU Plan table view — all dates, frozen header */}
+    {viewMode==='skuplan'&&<div style={{display:'flex',flexDirection:'column',gap:0}}>
+      {/* SKU filter chips */}
+      <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap',marginBottom:8,padding:'8px 10px',background:'#f8fafc',borderRadius:9,border:'1px solid #e2e8f0'}}>
+        <span style={{fontSize:11,fontWeight:800,color:'#64748b',whiteSpace:'nowrap',marginRight:2}}>Filter SKU:</span>
+        {['All',...allSkus.filter(s=>s!=='All')].map(s=><button key={s} onClick={()=>setSkuFilter(s)} style={{padding:'4px 11px',borderRadius:99,border:`1.5px solid ${skuFilter===s?'#6366f1':'#e2e8f0'}`,background:skuFilter===s?'#6366f1':'#fff',color:skuFilter===s?'#fff':'#475569',fontSize:11,fontWeight:700,cursor:'pointer',whiteSpace:'nowrap',transition:'all .12s'}}>{s}</button>)}
+      </div>
+      {/* Search + controls bar */}
+      <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:7}}>
+        <div className="search" style={{flex:1,maxWidth:380}}><span>🔍</span><input className="inp" placeholder="Search date, SKU, vendor, client..." value={tableSearch} onChange={e=>setTableSearch(e.target.value)}/></div>
+        <select className="sel" style={{height:30,padding:'4px 8px',fontSize:11,borderRadius:7,width:180}} value={filter} onChange={e=>setFilter(e.target.value)}>
+          <option>All</option><option>Receive from Vendor</option><option>Dispatch to Client</option>
+        </select>
+        <span style={{fontSize:11,color:'#94a3b8',fontWeight:700,whiteSpace:'nowrap'}}>{skuPlanRows.length} rows</span>
+        <button className="btn secondary" style={{fontSize:11,padding:'3px 9px',height:28,borderRadius:6}} onClick={()=>exportCSV(skuPlanRows,'sku_plan.csv')}>⬇ CSV</button>
+      </div>
+      {/* Frozen-header scrollable table */}
+      <div style={{border:'1px solid #e2e8f0',borderRadius:10,overflow:'hidden',boxShadow:'0 1px 4px rgba(15,23,42,.06)'}}>
+        <div style={{maxHeight:'calc(100vh - 360px)',overflowY:'auto',overflowX:'auto'}}>
+          <table style={{width:'100%',borderCollapse:'collapse',fontSize:12,tableLayout:'fixed'}}>
+            <colgroup>
+              <col style={{width:108}}/><col style={{width:170}}/><col style={{width:110}}/><col style={{width:110}}/><col style={{width:155}}/><col style={{width:145}}/><col style={{width:105}}/><col style={{width:105}}/>
+            </colgroup>
+            <thead>
+              <tr style={{position:'sticky',top:0,zIndex:10}}>
+                {[
+                  {key:'date',label:'📅 Date'},
+                  {key:'sku',label:'📦 SKU'},
+                  {key:'dispatch',label:'🚚 Dispatch'},
+                  {key:'receive',label:'📥 Receive'},
+                  {key:'receiveFrom',label:'Receive From'},
+                  {key:'dispatchTo',label:'Dispatch To'},
+                  {key:'dispatchStatus',label:'Disp. Status'},
+                  {key:'receiveStatus',label:'Recv. Status'},
+                ].map((c,ci)=><th key={c.key} onClick={()=>toggleSort(c.key)} style={{padding:'7px 10px',textAlign:ci>=2&&ci<=3?'right':'left',fontSize:10,fontWeight:900,textTransform:'uppercase',letterSpacing:.45,color:sortField===c.key?'#6366f1':'#64748b',cursor:'pointer',userSelect:'none',borderBottom:'2px solid #e2e8f0',background:'#f8fafc',whiteSpace:'nowrap'}}>
+                  {c.label}<span style={{marginLeft:3,fontSize:9,color:sortField===c.key?'#6366f1':'#d1d5db'}}>{sortField===c.key?(sortDir==='asc'?'▲':'▼'):'⇅'}</span>
+                </th>)}
+              </tr>
+            </thead>
+            <tbody>
+              {skuPlanRows.length?skuPlanRows.map((row,i)=>{
+                const isTd=row.date===today;
+                const isPast=row.date<today;
+                const hasDispatch=row.dispatch>0;
+                const hasReceive=row.receive>0;
+                return <tr key={i} style={{background:isTd?'#f5f3ff':i%2===0?'#fff':'#fafbfd',borderBottom:'1px solid #f1f5f9'}}>
+                  <td style={{padding:'4px 10px',whiteSpace:'nowrap'}}>
+                    <div style={{fontFamily:"'Sora',sans-serif",fontSize:11,fontWeight:800,color:isTd?'#6366f1':isPast?'#94a3b8':'#0f172a'}}>{row.date.split('-').reverse().join('/')}</div>
+                    {isTd&&<span style={{fontSize:7,background:'#ede9fe',color:'#6366f1',padding:'1px 4px',borderRadius:3,fontWeight:900,textTransform:'uppercase',letterSpacing:.3}}>TODAY</span>}
+                  </td>
+                  <td style={{padding:'4px 10px'}}>
+                    <span style={{fontWeight:700,fontSize:11,color:'#1e293b'}}>{row.sku}</span>
+                  </td>
+                  <td style={{padding:'4px 10px',textAlign:'right'}}>
+                    {hasDispatch
+                      ?<div style={{display:'inline-flex',alignItems:'center',gap:4,background:'#f0fdf4',border:'1px solid #bbf7d0',borderRadius:5,padding:'2px 6px'}}>
+                        <span style={{fontFamily:"'Sora',sans-serif",fontSize:11,fontWeight:800,color:'#059669'}}>{fN(row.dispatch)}</span>
+                        <span style={{fontSize:8,color:'#86efac',fontWeight:700}}>PCS</span>
+                      </div>
+                      :<span style={{color:'#e2e8f0',fontSize:11}}>—</span>}
+                  </td>
+                  <td style={{padding:'4px 10px',textAlign:'right'}}>
+                    {hasReceive
+                      ?<div style={{display:'inline-flex',alignItems:'center',gap:4,background:'#eff6ff',border:'1px solid #bfdbfe',borderRadius:5,padding:'2px 6px'}}>
+                        <span style={{fontFamily:"'Sora',sans-serif",fontSize:11,fontWeight:800,color:'#1d4ed8'}}>{fN(row.receive)}</span>
+                        <span style={{fontSize:8,color:'#93c5fd',fontWeight:700}}>PCS</span>
+                      </div>
+                      :<span style={{color:'#e2e8f0',fontSize:11}}>—</span>}
+                  </td>
+                  <td style={{padding:'4px 10px',fontSize:11,color:'#1d4ed8',fontWeight:600}}>{row.receiveFrom||<span style={{color:'#e2e8f0'}}>—</span>}</td>
+                  <td style={{padding:'4px 10px',fontSize:11,color:'#059669',fontWeight:600}}>{row.dispatchTo||<span style={{color:'#e2e8f0'}}>—</span>}</td>
+                  <td style={{padding:'4px 10px'}}>
+                    {row.dispatchStatus
+                      ?<span style={{fontSize:9,fontWeight:800,padding:'1px 6px',borderRadius:99,background:row.dispatchStatus.toLowerCase()==='pending'?'#dbeafe':row.dispatchStatus.toLowerCase()==='planned'?'#fef3c7':'#dcfce7',color:row.dispatchStatus.toLowerCase()==='pending'?'#1e40af':row.dispatchStatus.toLowerCase()==='planned'?'#92400e':'#166534'}}>{row.dispatchStatus}</span>
+                      :<span style={{color:'#e2e8f0',fontSize:11}}>—</span>}
+                  </td>
+                  <td style={{padding:'4px 10px'}}>
+                    {row.receiveStatus
+                      ?<span style={{fontSize:9,fontWeight:800,padding:'1px 6px',borderRadius:99,background:row.receiveStatus.toLowerCase()==='planned'?'#fef3c7':row.receiveStatus.toLowerCase()==='received'?'#dcfce7':'#dbeafe',color:row.receiveStatus.toLowerCase()==='planned'?'#92400e':row.receiveStatus.toLowerCase()==='received'?'#166634':'#1e40af'}}>{row.receiveStatus}</span>
+                      :<span style={{color:'#e2e8f0',fontSize:11}}>—</span>}
+                  </td>
+                </tr>
+              }):<tr><td colSpan={8} style={{textAlign:'center',padding:48,color:'#94a3b8',fontWeight:700,fontSize:13}}>No planned events found</td></tr>}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div style={{marginTop:5,fontSize:11,color:'#94a3b8',fontWeight:700}}>{skuPlanRows.length} rows · all planned delivery dates across full pipeline</div>
+    </div>}
   </div>
 }
 
